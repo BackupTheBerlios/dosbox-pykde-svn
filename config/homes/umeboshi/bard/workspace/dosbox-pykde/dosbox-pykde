@@ -6,7 +6,7 @@ from kdecore import KCmdLineArgs
 from widgets import AboutData
 from widgets import MainApplication
 from widgets import MainWindow
-
+from config import config
 
 if __name__ == '__main__':
     aboutData = AboutData()
@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     # setup application
     app = MainApplication()
-    app.foo = 'foo, foobar'
+    app.config = config
     # setup dcop and register the application
     dcop = app.dcopClient()
     appid = dcop.registerAs('dosbox-pykde')

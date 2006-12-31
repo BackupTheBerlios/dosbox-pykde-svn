@@ -1,3 +1,4 @@
+import os
 from qt import SIGNAL, SLOT
 from qt import QSplitter
 from qt import qApp
@@ -19,6 +20,8 @@ from kdeui import KMessageBox
 #from kdeui import KDialogBase
 from kdeui import KStdAction
 from kdeui import KPopupMenu
+
+from kfile import KDirSelectDialog
 
 from actions import NewGenre, NewGame
 from infodoc import BaseDocument
@@ -102,7 +105,12 @@ class MainWindow(KMainWindow):
         self.textView = InfoBrowser(self.splitView)
         
         self.setCentralWidget(self.splitView)
-        print KApplication.kApplication().foo
+        self.config = KApplication.kApplication().config
+
+        # setup dialog pointers
+        self.new_game_dir_dialog = None
+        self.new_game_dialog = None
+        self.new_genre_dialog = None
         
     def initlistView(self):
         self.listView.addColumn('genre', -1)
@@ -132,12 +140,33 @@ class MainWindow(KMainWindow):
         self.quitAction.plug(toolbar)
         
     def slotNewGame(self):
-        KMessageBox.information(self,
-                                'setup new game')
+        if self.new_game_dir_dialog is None:
+            dlg = KDirSelectDialog(self.config.get('DEFAULT', 'main_dosbox_path'), 0, self)
+            dlg.connect(dlg, SIGNAL('okClicked()'), self.select_new_game_path)
+            dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_new_game_dir_dlg)
+            dlg.connect(dlg, SIGNAL('closeClicked()'), self.destroy_new_game_dir_dlg)
+            dlg.show()
+            self.new_game_dir_dialog = dlg
+        else:
+            KMessageBox.error(self,
+                             'There is already a dialog box open.  Close it or restart the program')
 
+    def destroy_new_game_dir_dlg(self, *args):
+        print 'args', args
+        self.new_game_dir_dialog = None
+        
     def slotNewGenre(self):
         KMessageBox.information(self,
                                 'create new genre')
+
+    def select_new_game_path(self):
+        url = self.new_game_dir_dialog.url()
+        fullpath = str(url.path())
+        name = os.path.basename(fullpath)
+        print name, fullpath
+        self.new_game_dir_dialog = None
+
+    
 if __name__ == '__main__':
     print "testing module"
     

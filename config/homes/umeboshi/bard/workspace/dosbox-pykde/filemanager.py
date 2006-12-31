@@ -4,6 +4,8 @@ from zipfile import ZipFile
 from useless.base.util import md5sum
 from useless.base.util import makepaths
 
+from config import config
+
 class ExistsError(StandardError):
     pass
 
@@ -11,10 +13,10 @@ class FileError(StandardError):
     pass
 
 # default locations
-INSTALLED_ARCHIVES_PATH = '/mirrors/share/archives/dosbox-installed'
-EXTRAS_ARCHIVES_PATH = '/mirrors/share/archives/dosbox-extras'
-TMP_PARENT_PATH = '/tmp/dosbox-area'
-MAIN_DOSBOX_PATH = '/mirrors/share/dosbox'
+INSTALLED_ARCHIVES_PATH = config.get('DEFAULT', 'installed_archives_path')
+EXTRAS_ARCHIVES_PATH = config.get('DEFAULT', 'extras_archives_path')
+TMP_PARENT_PATH = config.get('DEFAULT', 'tmp_parent_path')
+MAIN_DOSBOX_PATH = config.get('DEFAULT', 'main_dosbox_path')
 
 
 def generate_md5sums():
