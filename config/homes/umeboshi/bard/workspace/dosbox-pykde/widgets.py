@@ -1,5 +1,6 @@
 from qt import SIGNAL, SLOT
 from qt import QSplitter
+from qt import qApp
 #from qt import QGridLayout
 #from qt import QLabel
 #from qt import QFrame
@@ -19,6 +20,7 @@ from kdeui import KMessageBox
 from kdeui import KStdAction
 from kdeui import KPopupMenu
 
+from actions import NewGenre, NewGame
 from infodoc import BaseDocument
 
 # text browser for game info
@@ -80,12 +82,12 @@ class MainApplication(KApplication):
 
 # main window class
 class MainWindow(KMainWindow):
-    def __init__(self, parent, filelist):
+    def __init__(self, parent):
         KMainWindow.__init__(self, parent, 'PyKDE Dosbox Frontend')
         #self.resize(500, 450)
         self.initActions()
         self.initMenus()
-        
+        self.initToolbar()
         # place a splitter in the window
         self.splitView = QSplitter(self, 'splitView')
         # place a listview in the splitter (on the left)
@@ -100,7 +102,8 @@ class MainWindow(KMainWindow):
         self.textView = InfoBrowser(self.splitView)
         
         self.setCentralWidget(self.splitView)
-            
+        print KApplication.kApplication().foo
+        
     def initlistView(self):
         self.listView.addColumn('genre', -1)
 
@@ -111,14 +114,30 @@ class MainWindow(KMainWindow):
     def initActions(self):
         collection = self.actionCollection()
         self.quitAction = KStdAction.quit(self.close, collection)
+        self.newGenreAction = NewGenre(self.slotNewGenre, collection)
+        self.newGameAction = NewGame(self.slotNewGame, collection)
 
     def initMenus(self):
         mainmenu = KPopupMenu(self)
+        self.newGenreAction.plug(mainmenu)
+        self.newGameAction.plug(mainmenu)
         self.quitAction.plug(mainmenu)
         self.menuBar().insertItem('&Main', mainmenu)
         self.menuBar().insertItem('&Help', self.helpMenu(''))
-        
 
+    def initToolbar(self):
+        toolbar = self.toolBar()
+        self.newGenreAction.plug(toolbar)
+        self.newGameAction.plug(toolbar)
+        self.quitAction.plug(toolbar)
+        
+    def slotNewGame(self):
+        KMessageBox.information(self,
+                                'setup new game')
+
+    def slotNewGenre(self):
+        KMessageBox.information(self,
+                                'create new genre')
 if __name__ == '__main__':
     print "testing module"
     
