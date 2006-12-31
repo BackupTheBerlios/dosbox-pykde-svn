@@ -1,0 +1,60 @@
+#!/usr/bin/python
+import os, sys
+
+from kdecore import KCmdLineArgs
+
+from widgets import AboutData
+from widgets import MainApplication
+from widgets import MainWindow
+
+#from qt import SIGNAL, SLOT
+#from qt import QSplitter
+#from qt import QGridLayout
+#from qt import QLabel
+#from qt import QFrame
+
+#from kdecore import KAboutData
+#from kdecore import KApplication
+#from kdecore import KEntryKey, KEntry
+
+#from kdeui import KAboutDialog
+#from kdeui import KMainWindow
+#from kdeui import KListView, KListViewItem
+#from kdeui import KTextBrowser
+#from kdeui import KMessageBox
+#from kdeui import KLineEdit
+#from kdeui import KDialogBase
+#from kdeui import KStdAction
+#from kdeui import KPopupMenu
+
+if __name__ == '__main__':
+    from datetime import datetime
+    aboutData = AboutData()
+    # I don't know what these three lines are actually doing
+    # but the end result 'args' is a KCmdLineArgs instance
+    KCmdLineArgs.init(sys.argv, aboutData)
+    KCmdLineArgs.addCmdLineOptions([('+files', 'files to edit')])
+    args = KCmdLineArgs.parsedArgs()
+    # it should be like this:
+    ## for a in args:
+    ##     print a
+    # but it works like this:
+    ## for a in range(args.count()):
+    ##     print args.arg(a)
+    filelist_args = [args.arg(a) for a in range(args.count())]
+    # setup application
+    app = MainApplication()
+
+    # setup dcop and register the application
+    dcop = app.dcopClient()
+    appid = dcop.registerAs('dosbox-pykde')
+
+    win = MainWindow(None, filelist_args)
+    win.show()
+    # set main window in application
+    app.setMainWidget(win)
+
+    # run the application
+    app.exec_loop()
+
+    
