@@ -14,6 +14,9 @@ extras_archives_path:	%(__archive_parent_path)s/dosbox-extras
 tmp_parent_path:		/tmp/dosbox-area
 main_dosbox_path:	         %(__main_path)s/dosbox
 overwrite_extras_archives:	False
+
+[mainwindow]
+mainwindow_size:  400, 600
 """
 
 main_config_dir = os.path.expanduser('~/.dosbox-pykde')
@@ -24,9 +27,21 @@ if not os.path.exists(configfilename):
     configfile.close()
     
 
+class MyConfig(ConfigParser):
+    def __init__(self):
+        ConfigParser.__init__(self)
+        self.configfilename = configfilename
+        
+    def get_xy(self, section, option):
+        strvalue = self.get(section, option)
+        x, y = [int(v.strip()) for v in strvalue.split(',')]
+        return x, y
 
+    def reload_config(self):
+        self.read([self.configfilename])
+        
 # setup ConfigParser
-config = ConfigParser()
+config = MyConfig()
 configfiles = [configfilename, './local-dosbox-pykde.conf']
 config.read(configfiles)
 

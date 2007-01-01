@@ -26,6 +26,7 @@ from widgets import MainWindow
 
 from config import config
 from gamesdata import GameDataHandler
+from filemanager import GameFilesHandler
 
 if __name__ == '__main__':
     aboutData = AboutData()
@@ -36,6 +37,7 @@ if __name__ == '__main__':
     app = MainApplication()
     app.config = config
     app.game_datahandler = GameDataHandler(games_dir)
+    app.game_fileshandler = GameFilesHandler(app.game_datahandler)
     
     # setup dcop and register the application
     dcop = app.dcopClient()

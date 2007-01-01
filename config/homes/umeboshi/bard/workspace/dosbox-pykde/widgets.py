@@ -25,7 +25,11 @@ from kdeui import KPushButton
 from kfile import KDirSelectDialog
 from kfile import KFileDialog
 
-from actions import NewGenre, NewGame
+from base import split_url
+from actions import NewGenre, NewGame, LaunchDosbox
+from actions import NameView, TitleView
+from actions import FlatView, TreeView
+
 from infodoc import BaseDocument
 
 opendlg_errormsg = 'There is already a dialog box open.  Close it or restart the program'
@@ -88,7 +92,7 @@ class AddNewGameLayout(QGridLayout):
         
     def select_launch_command(self):
         if self.select_launch_command_dlg is None:
-            file_filter = "*.exe *.bat *.com|Dos Executables\n*.*|All Files"
+            file_filter = "*.exe *.bat *.com|Dos Executables\n*|All Files"
             dlg = KFileDialog(self.fullpath, file_filter,  self.parent(), 'select_launch_command_dlg', True)
             dlg.connect(dlg, SIGNAL('okClicked()'), self.launch_command_selected)
             dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_select_launch_command_dlg)
@@ -133,7 +137,17 @@ class InfoBrowser(KTextBrowser):
         
     # this is selected when a url is clicked
     def setSource(self, url):
-        action, key, filename = split_url(url)
+        #action, key, filename = split_url(url)
+        action, name = split_url(url)
+        print action, name
+        filehandler = self.app.game_fileshandler
+        if action == 'cleanup':
+            filehandler.cleanup_game(name)
+        elif action == 'prepare':
+            filehandler.prepare_game(name)
+
+        self.set_game_info(name)
+        
         if action == 'new':
             dlg = XattrDialog(self, filename)
             dlg.connect(dlg, SIGNAL('okClicked()'), dlg.update_xattr)
@@ -184,6 +198,10 @@ class MainWindow(KMainWindow):
         # setup app pointer
         self.app = KApplication.kApplication()
         self.config = self.app.config
+        self.resize(*self.config.get_xy('mainwindow', 'mainwindow_size'))
+        # setup default view options
+        self.flat_tree_view = 'flat'
+        self.name_title_view = 'name'
         #self.resize(500, 450)
         self.initActions()
         self.initMenus()
@@ -216,7 +234,11 @@ class MainWindow(KMainWindow):
         handler = self.app.game_datahandler
         games = handler.get_game_names()
         for game in games:
-            item = KListViewItem(self.listView, game)
+            if self.name_title_view == 'name':
+                item = KListViewItem(self.listView, game)
+            else:
+                fullname = handler.get_game_data(game)['fullname']
+                item = KListViewItem(self.listView, fullname)
             item.game = game
             
     def selectionChanged(self):
@@ -228,19 +250,33 @@ class MainWindow(KMainWindow):
         self.quitAction = KStdAction.quit(self.close, collection)
         self.newGenreAction = NewGenre(self.slotNewGenre, collection)
         self.newGameAction = NewGame(self.slotNewGame, collection)
-
+        self.launchDosboxAction = LaunchDosbox(self.slotLaunchDosbox, collection)
+        self.flatViewAction = FlatView(self.slotFlatView, collection)
+        self.treeViewAction = TreeView(self.slotTreeView, collection)
+        self.nameViewAction = NameView(self.slotNameView, collection)
+        self.titleViewAction = TitleView(self.slotTitleView, collection)
+        
+        
     def initMenus(self):
         mainmenu = KPopupMenu(self)
         self.newGenreAction.plug(mainmenu)
         self.newGameAction.plug(mainmenu)
+        self.launchDosboxAction.plug(mainmenu)
         self.quitAction.plug(mainmenu)
+        optionmenu = KPopupMenu(self)
+        self.flatViewAction.plug(optionmenu)
+        self.treeViewAction.plug(optionmenu)
+        self.nameViewAction.plug(optionmenu)
+        self.titleViewAction.plug(optionmenu)
         self.menuBar().insertItem('&Main', mainmenu)
+        self.menuBar().insertItem('&Options', optionmenu)
         self.menuBar().insertItem('&Help', self.helpMenu(''))
 
     def initToolbar(self):
         toolbar = self.toolBar()
         self.newGenreAction.plug(toolbar)
         self.newGameAction.plug(toolbar)
+        self.launchDosboxAction.plug(toolbar)
         self.quitAction.plug(toolbar)
         
     def slotNewGame(self):
@@ -264,6 +300,11 @@ class MainWindow(KMainWindow):
         KMessageBox.information(self,
                                 'create new genre')
 
+    def slotLaunchDosbox(self):
+        game = self.listView.currentItem().game
+        KMessageBox.information(self,
+                                'launch %s in dosbox' % game)
+        
     def select_new_game_path(self):
         url = self.new_game_dir_dialog.url()
         fullpath = str(url.path())
@@ -293,9 +334,26 @@ class MainWindow(KMainWindow):
                         launchcmd=launchcmd)
         handler = self.app.game_datahandler
         handler.add_new_game(gamedata)
+        filehandler = self.app.game_fileshandler
+        filehandler.archive_fresh_install(name)
+        self.refreshListView()
+        self.add_new_game_dlg = None
+        
+    def slotFlatView(self):
+        KMessageBox.information(self, 'set to flat view')
+
+    def slotTreeView(self):
+        KMessageBox.information(self, 'set to tree view')
+
+    def slotNameView(self):
+        #KMessageBox.information(self, 'set to name view')
+        self.name_title_view = 'name'
         self.refreshListView()
         
-        
+    def slotTitleView(self):
+        #KMessageBox.information(self, 'set to title view')
+        self.name_title_view = 'title'
+        self.refreshListView()
     
 if __name__ == '__main__':
     print "testing module"
