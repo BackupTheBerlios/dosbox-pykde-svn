@@ -199,6 +199,9 @@ class MainWindow(KMainWindow):
         self.app = KApplication.kApplication()
         self.config = self.app.config
         self.resize(*self.config.get_xy('mainwindow', 'mainwindow_size'))
+        # initialize game data
+        self.initialize_important_game_data()
+        self._treedict = {}
         # setup default view options
         self.flat_tree_view = 'flat'
         self.name_title_view = 'name'
@@ -228,22 +231,70 @@ class MainWindow(KMainWindow):
     def initlistView(self):
         self.listView.addColumn('genre', -1)
         self.refreshListView()
+
+    def initialize_important_game_data(self):
+        self.game_titles = {}
+        self.game_paths = {}
+        handler = self.app.game_datahandler
+        self.game_names = handler.get_game_names()
+        for game in self.game_names:
+            gamedata = handler.get_game_data(game)
+            self.game_titles[game] = gamedata['fullname']
+            self.game_paths[game] = gamedata['dosboxpath']
+
+    def update_important_game_data(self, name):
+        handler = self.app.game_datahandler
+        gamedata = handler.get_game_data(name)
+        self.game_titles[name] = gamedata['fullname']
+        self.game_paths[name] = gamedata['dosboxpath']
+        if name not in self.game_names:
+            self.game_names.append(name)
+            self.game_names.sort()
+
+    def _appendListItem(self, parent, name):
+        if self.name_title_view == 'name':
+            item = KListViewItem(parent, name)
+        else:
+            fullname = self.game_titles[name]
+            item = KListViewItem(parent, fullname)
+        item.game = name
         
     def refreshListView(self):
         self.listView.clear()
-        handler = self.app.game_datahandler
-        games = handler.get_game_names()
-        for game in games:
-            if self.name_title_view == 'name':
-                item = KListViewItem(self.listView, game)
-            else:
-                fullname = handler.get_game_data(game)['fullname']
-                item = KListViewItem(self.listView, fullname)
-            item.game = game
+        #handler = self.app.game_datahandler
+        #games = handler.get_game_names()
+        if self.flat_tree_view == 'tree':
+            self._treedict = {}
+            self.listView.setRootIsDecorated(True)
+            for name in self.game_names:
+                path = self.game_paths[name]
+                # basename should always equal name
+                # we only need the dirname
+                dirname, basename = os.path.split(path)
+                dirs = dirname.split('/')
+                parent = None
+                for adir in dirs:
+                    if parent is None:
+                        if adir not in self._treedict:
+                            self._treedict[adir] = KListViewItem(self.listView, adir)
+                            self._treedict[adir].dirname = adir
+                        parent = self._treedict[adir]
+                    else:
+                        path = os.path.join(parent.dirname, adir)
+                        if path not in self._treedict:
+                            self._treedict[path] = KListViewItem(parent, adir)
+                            self._treedict[path].dirname = path
+                        parent = self._treedict[path]
+                self._appendListItem(self._treedict[dirname], basename)            
+        else:
+            self.listView.setRootIsDecorated(False)
+            for game in self.game_names:
+                self._appendListItem(self.listView, game)
             
     def selectionChanged(self):
         item = self.listView.currentItem()
-        self.textView.set_game_info(item.game)
+        if hasattr(item, 'game'):
+            self.textView.set_game_info(item.game)
         
     def initActions(self):
         collection = self.actionCollection()
@@ -302,49 +353,65 @@ class MainWindow(KMainWindow):
 
     def slotLaunchDosbox(self):
         game = self.listView.currentItem().game
-        KMessageBox.information(self,
-                                'launch %s in dosbox' % game)
+        self.app.dosbox.run_game(game)
+        #KMessageBox.information(self, 'launch %s in dosbox' % game)
         
     def select_new_game_path(self):
         url = self.new_game_dir_dialog.url()
         fullpath = str(url.path())
         name = os.path.basename(fullpath)
-        print name, fullpath
+        if name not in self.game_names:
+            print name, fullpath
+            if self.add_new_game_dlg is None:
+                dlg = AddNewGameDialog(self, fullpath)
+                dlg.connect(dlg, SIGNAL('okClicked()'), self.add_new_game)
+                dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_add_new_game_dlg)
+                dlg.connect(dlg, SIGNAL('closeClicked()'), self.destroy_add_new_game_dlg)
+                dlg.show()
+                self.add_new_game_dlg = dlg
+        else:
+            KMessageBox.error(self, '%s already exists.' % name)
         self.new_game_dir_dialog = None
-        if self.add_new_game_dlg is None:
-            dlg = AddNewGameDialog(self, fullpath)
-            dlg.connect(dlg, SIGNAL('okClicked()'), self.add_new_game)
-            dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_add_new_game_dlg)
-            dlg.connect(dlg, SIGNAL('closeClicked()'), self.destroy_add_new_game_dlg)
-            dlg.show()
-            self.add_new_game_dlg = dlg
-
+            
     def add_new_game(self):
         print 'add_new_game'
         dlg = self.add_new_game_dlg
         # setup keys for gamedata
         name = str(dlg.grid.name_entry.text())
-        fullname = str(dlg.grid.fullname_entry.text())
-        desc = str(dlg.grid.desc_entry.text())
-        dosboxpath = str(dlg.grid.dosboxpath_entry.text())
-        launchcmd = str(dlg.grid.launch_entry.text())
-        # fill gamedata
-        gamedata = dict(name=name, fullname=fullname,
-                        description=desc, dosboxpath=dosboxpath,
-                        launchcmd=launchcmd)
-        handler = self.app.game_datahandler
-        handler.add_new_game(gamedata)
-        filehandler = self.app.game_fileshandler
-        filehandler.archive_fresh_install(name)
-        self.refreshListView()
+        if name not in self.game_names:
+            fullname = str(dlg.grid.fullname_entry.text())
+            desc = str(dlg.grid.desc_entry.text())
+            dosboxpath = str(dlg.grid.dosboxpath_entry.text())
+            launchcmd = str(dlg.grid.launch_entry.text())
+            # fill gamedata
+            gamedata = dict(name=name, fullname=fullname,
+                            description=desc, dosboxpath=dosboxpath,
+                            launchcmd=launchcmd)
+            # add game to data handler
+            handler = self.app.game_datahandler
+            handler.add_new_game(gamedata)
+            # archive as fresh install
+            filehandler = self.app.game_fileshandler
+            filehandler.archive_fresh_install(name)
+            # update quick reference dictionaries
+            self.update_important_game_data(name)
+            # update the list
+            self.refreshListView()
+            # now we should be done with this dialog
+        else:
+            KMessageBox.error(self, '%s already exists.' % name)
         self.add_new_game_dlg = None
         
     def slotFlatView(self):
-        KMessageBox.information(self, 'set to flat view')
-
+        #KMessageBox.information(self, 'set to flat view')
+        self.flat_tree_view = 'flat'
+        self.refreshListView()
+        
     def slotTreeView(self):
-        KMessageBox.information(self, 'set to tree view')
-
+        #KMessageBox.information(self, 'set to tree view')
+        self.flat_tree_view = 'tree'
+        self.refreshListView()
+        
     def slotNameView(self):
         #KMessageBox.information(self, 'set to name view')
         self.name_title_view = 'name'

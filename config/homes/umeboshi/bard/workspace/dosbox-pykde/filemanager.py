@@ -142,7 +142,7 @@ def prepare_game(path, name=None):
     zfilename = determine_install_zipfilename(path, name)
     archivename = determine_extras_archivename(name)
     if not os.path.exists(zfilename):
-        raise ExistsError, "%s doesn't exist"
+        raise ExistsError, "%s doesn't exist" % zfilename
     # unzip fresh install
     os.system('unzip %s' % zfilename)
     if not os.path.exists(archivename):

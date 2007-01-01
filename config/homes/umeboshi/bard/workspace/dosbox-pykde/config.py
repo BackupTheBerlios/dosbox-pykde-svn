@@ -7,17 +7,21 @@ default_config = """
 # but are here to ease editing this file
 
 [DEFAULT]
-__main_path:                /mirrors/share
+__main_path:                %s """ % os.path.expanduser('~/')[:-1]
+default_config +="""
 __archive_parent_path:      %(__main_path)s/archives
 installed_archives_path:	%(__archive_parent_path)s/dosbox-installed
 extras_archives_path:	%(__archive_parent_path)s/dosbox-extras
 tmp_parent_path:		/tmp/dosbox-area
 main_dosbox_path:	         %(__main_path)s/dosbox
 overwrite_extras_archives:	False
+# the path to the dosbox binary
+# if already in the path, the default should be fine
+dosbox_binary:              dosbox
 
 [mainwindow]
 mainwindow_size:  400, 600
-"""
+""" 
 
 main_config_dir = os.path.expanduser('~/.dosbox-pykde')
 configfilename = os.path.join(main_config_dir, 'dosbox-pykde.conf')

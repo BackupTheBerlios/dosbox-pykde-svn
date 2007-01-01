@@ -16,6 +16,10 @@ if not os.path.exists(games_dir):
 dbox_configs_dir = os.path.join(main_config_dir, 'configs')
 if not os.path.exists(dbox_configs_dir):
     os.mkdir(dbox_configs_dir)
+
+dbox_main_screenshots_dir = os.path.join(main_config_dir, 'capture')
+if not os.path.exists(dbox_main_screenshots_dir):
+    os.mkdir(dbox_main_screenshots_dir)
     
 
 from kdecore import KCmdLineArgs
@@ -27,6 +31,7 @@ from widgets import MainWindow
 from config import config
 from gamesdata import GameDataHandler
 from filemanager import GameFilesHandler
+from dosbox import Dosbox
 
 if __name__ == '__main__':
     aboutData = AboutData()
@@ -36,8 +41,10 @@ if __name__ == '__main__':
     # setup application
     app = MainApplication()
     app.config = config
+    app.main_config_dir = main_config_dir
     app.game_datahandler = GameDataHandler(games_dir)
     app.game_fileshandler = GameFilesHandler(app.game_datahandler)
+    app.dosbox = Dosbox(app)
     
     # setup dcop and register the application
     dcop = app.dcopClient()
