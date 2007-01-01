@@ -2,36 +2,130 @@ import os
 from qt import SIGNAL, SLOT
 from qt import QSplitter
 from qt import qApp
-#from qt import QGridLayout
-#from qt import QLabel
-#from qt import QFrame
+from qt import QGridLayout
+from qt import QLabel
+from qt import QFrame
 
 from kdecore import KAboutData
-#from kdecore import KCmdLineArgs
 from kdecore import KApplication
-#from kdecore import KEntryKey, KEntry
+
 
 from kdeui import KAboutDialog
 from kdeui import KMainWindow
 from kdeui import KListView, KListViewItem
 from kdeui import KTextBrowser
 from kdeui import KMessageBox
-#from kdeui import KLineEdit
-#from kdeui import KDialogBase
+from kdeui import KLineEdit
+from kdeui import KDialogBase
 from kdeui import KStdAction
 from kdeui import KPopupMenu
+from kdeui import KTextEdit
+from kdeui import KPushButton
 
 from kfile import KDirSelectDialog
+from kfile import KFileDialog
 
 from actions import NewGenre, NewGame
 from infodoc import BaseDocument
 
+opendlg_errormsg = 'There is already a dialog box open.  Close it or restart the program'
+
+class AddNewGameLayout(QGridLayout):
+    def __init__(self, parent, fullpath, name='AddNewGameLayout'):
+        nrows = 2
+        ncols = 2
+        margin = 0
+        space = 1
+        QGridLayout.__init__(self, parent, nrows, ncols, margin, space, name)
+        self.config = KApplication.kApplication().config
+        self.fullpath = fullpath
+        shortname = os.path.basename(self.fullpath)
+        # setup dialog pointers
+        self.select_launch_command_dlg = None
+
+        # Setup widgets
+        # setup name widgets
+        self.name_lbl = QLabel('<b>Name</b>', parent)
+        self.name_entry = KLineEdit(shortname, parent)
+        # add name widgets
+        self.addWidget(self.name_lbl, 0, 0)
+        self.addWidget(self.name_entry, 1, 0)
+        # setup fullname widgets
+        self.fullname_lbl = QLabel('<b>Full name</b>', parent)
+        self.fullname_entry = KLineEdit(shortname.capitalize(), parent)
+        # add fullname widgets
+        self.addWidget(self.fullname_lbl, 2, 0)
+        self.addWidget(self.fullname_entry, 3, 0)
+        # setup description widgets
+        self.desc_lbl = QLabel('<b>Description</b>', parent)
+        self.desc_entry = KTextEdit(parent, 'description_entry')
+        # add description widgets
+        self.addWidget(self.desc_lbl, 4, 0)
+        self.addWidget(self.desc_entry, 5, 0)
+        # setup launch command widgets
+        self.launch_lbl = QLabel('<b>Launch command</b>', parent)
+        self.launch_entry = KLineEdit('%s.exe' % shortname, parent)
+        self.launch_dlg_button = KPushButton('...', parent, 'launch_dlg_button')
+        self.launch_dlg_button.connect(self.launch_dlg_button, SIGNAL('clicked()'),
+                                       self.select_launch_command)
+        # add launch command widgets
+        self.addWidget(self.launch_lbl, 0, 1)
+        self.addWidget(self.launch_entry, 1, 1)
+        self.addWidget(self.launch_dlg_button, 1, 2)
+        # setup dosboxpath widgets
+        self.dosboxpath_lbl = QLabel('<b>dosbox path</b>', parent)
+        main_dbox_path = self.config.get('DEFAULT', 'main_dosbox_path')
+        if not self.fullpath.startswith(main_dbox_path):
+            raise ValueError, '%s is not contained in %s' % (self.fullpath, main_dbox_path)
+        dbox_path = self.fullpath.split(main_dbox_path)[1]
+        while dbox_path.startswith('/'):
+            dbox_path = dbox_path[1:]
+        self.dosboxpath_entry = KLineEdit(dbox_path, parent)
+        # add dosboxpath widgets
+        self.addWidget(self.dosboxpath_lbl, 2, 1)
+        self.addWidget(self.dosboxpath_entry, 3, 1)
+        
+        
+    def select_launch_command(self):
+        if self.select_launch_command_dlg is None:
+            file_filter = "*.exe *.bat *.com|Dos Executables\n*.*|All Files"
+            dlg = KFileDialog(self.fullpath, file_filter,  self.parent(), 'select_launch_command_dlg', True)
+            dlg.connect(dlg, SIGNAL('okClicked()'), self.launch_command_selected)
+            dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_select_launch_command_dlg)
+            dlg.connect(dlg, SIGNAL('closeClicked()'), self.destroy_select_launch_command_dlg)
+            dlg.show()
+            self.select_launch_command_dlg = dlg
+        else:
+            # we shouldn't need this with a modal dialog
+            KMessageBox.error(self.parent(), opendlg_errormsg)
+
+    def destroy_select_launch_command_dlg(self):
+        self.select_launch_command_dlg = None
+
+    def launch_command_selected(self):
+        dlg = self.select_launch_command_dlg
+        url = dlg.selectedURL()
+        fullpath = str(url.path())
+        launch_command = os.path.basename(fullpath)
+        self.launch_entry.setText(launch_command)
+        self.select_launch_command_dlg = None
+        
+class AddNewGameDialog(KDialogBase):
+    def __init__(self, parent, fullpath, name='AddNewGameDialog'):
+        KDialogBase.__init__(self, parent, name)
+        self.resize(400, 300)
+        self.fullpath = fullpath
+        self._frame = QFrame(self)
+        self.setMainWidget(self._frame)
+        self.grid = AddNewGameLayout(self._frame, self.fullpath)
+        
 # text browser for game info
 class InfoBrowser(KTextBrowser):
     def __init__(self, parent):
         KTextBrowser.__init__(self, parent)
+        self.app = KApplication.kApplication()
         self.setNotifyClick(True)
-        self.doc = BaseDocument()
+        self.doc = BaseDocument(self.app)
 
     def set_game_info(self, name):
         self.doc.set_info(name)
@@ -87,6 +181,9 @@ class MainApplication(KApplication):
 class MainWindow(KMainWindow):
     def __init__(self, parent):
         KMainWindow.__init__(self, parent, 'PyKDE Dosbox Frontend')
+        # setup app pointer
+        self.app = KApplication.kApplication()
+        self.config = self.app.config
         #self.resize(500, 450)
         self.initActions()
         self.initMenus()
@@ -103,21 +200,28 @@ class MainWindow(KMainWindow):
         
         # place text browser in splitter
         self.textView = InfoBrowser(self.splitView)
-        
+        # set main widget
         self.setCentralWidget(self.splitView)
-        self.config = KApplication.kApplication().config
 
         # setup dialog pointers
         self.new_game_dir_dialog = None
-        self.new_game_dialog = None
-        self.new_genre_dialog = None
+        self.add_new_game_dlg = None
         
     def initlistView(self):
         self.listView.addColumn('genre', -1)
-
+        self.refreshListView()
+        
+    def refreshListView(self):
+        self.listView.clear()
+        handler = self.app.game_datahandler
+        games = handler.get_game_names()
+        for game in games:
+            item = KListViewItem(self.listView, game)
+            item.game = game
+            
     def selectionChanged(self):
         item = self.listView.currentItem()
-        self.textView.setFileName(item.filename)   
+        self.textView.set_game_info(item.game)
         
     def initActions(self):
         collection = self.actionCollection()
@@ -148,12 +252,13 @@ class MainWindow(KMainWindow):
             dlg.show()
             self.new_game_dir_dialog = dlg
         else:
-            KMessageBox.error(self,
-                             'There is already a dialog box open.  Close it or restart the program')
+            KMessageBox.error(self, opendlg_errormsg)
 
-    def destroy_new_game_dir_dlg(self, *args):
-        print 'args', args
+    def destroy_new_game_dir_dlg(self):
         self.new_game_dir_dialog = None
+
+    def destroy_add_new_game_dlg(self):
+        self.add_new_game_dlg = None
         
     def slotNewGenre(self):
         KMessageBox.information(self,
@@ -165,7 +270,32 @@ class MainWindow(KMainWindow):
         name = os.path.basename(fullpath)
         print name, fullpath
         self.new_game_dir_dialog = None
+        if self.add_new_game_dlg is None:
+            dlg = AddNewGameDialog(self, fullpath)
+            dlg.connect(dlg, SIGNAL('okClicked()'), self.add_new_game)
+            dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_add_new_game_dlg)
+            dlg.connect(dlg, SIGNAL('closeClicked()'), self.destroy_add_new_game_dlg)
+            dlg.show()
+            self.add_new_game_dlg = dlg
 
+    def add_new_game(self):
+        print 'add_new_game'
+        dlg = self.add_new_game_dlg
+        # setup keys for gamedata
+        name = str(dlg.grid.name_entry.text())
+        fullname = str(dlg.grid.fullname_entry.text())
+        desc = str(dlg.grid.desc_entry.text())
+        dosboxpath = str(dlg.grid.dosboxpath_entry.text())
+        launchcmd = str(dlg.grid.launch_entry.text())
+        # fill gamedata
+        gamedata = dict(name=name, fullname=fullname,
+                        description=desc, dosboxpath=dosboxpath,
+                        launchcmd=launchcmd)
+        handler = self.app.game_datahandler
+        handler.add_new_game(gamedata)
+        self.refreshListView()
+        
+        
     
 if __name__ == '__main__':
     print "testing module"

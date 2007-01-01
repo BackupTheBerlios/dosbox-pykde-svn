@@ -4,13 +4,9 @@ from zipfile import ZipFile
 from useless.base.util import md5sum
 from useless.base.util import makepaths
 
+from base import ExistsError, FileError
+
 from config import config
-
-class ExistsError(StandardError):
-    pass
-
-class FileError(StandardError):
-    pass
 
 # default locations
 INSTALLED_ARCHIVES_PATH = config.get('DEFAULT', 'installed_archives_path')
@@ -108,14 +104,18 @@ def cleanup_install_path(path, name=None):
     os.chdir(path)
     cmd = 'rdiff-backup . %s' % tpath
     # rearchive extras
-    # don't remove oldarchive yet
-    oldnum = 1
-    oldarchive = '%s.bkup.%d' % (archivename, oldnum)
-    while os.path.exists(oldarchive):
-        oldnum += 1
+    if not config.getboolean('DEFAULT', 'overwrite_extras_archives'):
+        # don't remove oldarchive yet
+        oldnum = 1
         oldarchive = '%s.bkup.%d' % (archivename, oldnum)
-    if os.path.exists(archivename):
-        os.rename(archivename, oldarchive)
+        while os.path.exists(oldarchive):
+            oldnum += 1
+            oldarchive = '%s.bkup.%d' % (archivename, oldnum)
+        if os.path.exists(archivename):
+            os.rename(archivename, oldarchive)
+    else:
+        if os.path.exists(archivename):
+            os.remove(archivename)
     # start archival
     os.chdir(tpath)
     cmd = 'tar cvj . -f %s' % archivename

@@ -1,12 +1,31 @@
 #!/usr/bin/python
 import os, sys
 
+# setup configuration area before loading anything else
+main_config_dir = os.path.expanduser('~/.dosbox-pykde')
+if not os.path.exists(main_config_dir):
+    os.mkdir(main_config_dir)
+
+if not os.path.isdir(main_config_dir):
+    raise StandardError, 'main_config_dir: %s is not a directory' % main_config_dir
+
+games_dir = os.path.join(main_config_dir, 'games')
+if not os.path.exists(games_dir):
+    os.mkdir(games_dir)
+
+dbox_configs_dir = os.path.join(main_config_dir, 'configs')
+if not os.path.exists(dbox_configs_dir):
+    os.mkdir(dbox_configs_dir)
+    
+
 from kdecore import KCmdLineArgs
 
 from widgets import AboutData
 from widgets import MainApplication
 from widgets import MainWindow
+
 from config import config
+from gamesdata import GameDataHandler
 
 if __name__ == '__main__':
     aboutData = AboutData()
@@ -16,6 +35,8 @@ if __name__ == '__main__':
     # setup application
     app = MainApplication()
     app.config = config
+    app.game_datahandler = GameDataHandler(games_dir)
+    
     # setup dcop and register the application
     dcop = app.dcopClient()
     appid = dcop.registerAs('dosbox-pykde')

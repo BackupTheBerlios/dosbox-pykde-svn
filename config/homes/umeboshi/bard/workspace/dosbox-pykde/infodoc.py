@@ -14,8 +14,9 @@ def make_url(*args):
     return url_delimeter.join(args)
 
 class BaseDocument(SimpleDocument):
-    def __init__(self, title='BaseDocument', **args):
+    def __init__(self, app, title='BaseDocument', **args):
         SimpleDocument.__init__(self, title=title)
+        self.app = app
         self.maintable = Table(class_='BaseDocumentTable')
         self.body.set(self.maintable)
 
