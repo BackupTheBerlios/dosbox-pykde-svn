@@ -1,7 +1,6 @@
 import os
 from qt import SIGNAL, SLOT
 from qt import QSplitter
-from qt import qApp
 from qt import QGridLayout
 from qt import QLabel
 from qt import QFrame
@@ -25,105 +24,58 @@ from kdeui import KPushButton
 from kfile import KDirSelectDialog
 from kfile import KFileDialog
 
+from khtml import KHTMLPart
+
 from base import split_url
+from base import opendlg_errormsg
+
 from actions import NewGenre, NewGame, LaunchDosbox
 from actions import NameView, TitleView
 from actions import FlatView, TreeView
+from actions import PrepareAllGames, CleanAllGames
+from actions import ArchiveAllGames
 
 from infodoc import BaseDocument
+from gamedata_widgets import AddNewGameDialog
+from gamedata_widgets import EditGameDataDialog
 
-opendlg_errormsg = 'There is already a dialog box open.  Close it or restart the program'
 
-class AddNewGameLayout(QGridLayout):
-    def __init__(self, parent, fullpath, name='AddNewGameLayout'):
-        nrows = 2
-        ncols = 2
-        margin = 0
-        space = 1
-        QGridLayout.__init__(self, parent, nrows, ncols, margin, space, name)
-        self.config = KApplication.kApplication().config
-        self.fullpath = fullpath
-        shortname = os.path.basename(self.fullpath)
-        # setup dialog pointers
-        self.select_launch_command_dlg = None
+# would like to use this class, but don't
+# understand how to connect url clicks
+class InfoPart(KHTMLPart):
+    def __init__(self, parent, name='InfoPart'):
+        KHTMLPart.__init__(self, parent, name)
+        # setup app pointer
+        self.app = KApplication.kApplication()
+        self.doc = BaseDocument(self.app)
+        self.connect(self, SIGNAL('onURL(QString)'), self.setSource)
+        #self.connect(self, SIGNAL('urlSelected(QString)'), self.setSource)
+                
+    def set_game_info(self, name):
+        self.begin()
+        self.doc.set_info(name)
+        self.write(self.doc.output())
+        self.end()
 
-        # Setup widgets
-        # setup name widgets
-        self.name_lbl = QLabel('<b>Name</b>', parent)
-        self.name_entry = KLineEdit(shortname, parent)
-        # add name widgets
-        self.addWidget(self.name_lbl, 0, 0)
-        self.addWidget(self.name_entry, 1, 0)
-        # setup fullname widgets
-        self.fullname_lbl = QLabel('<b>Full name</b>', parent)
-        self.fullname_entry = KLineEdit(shortname.capitalize(), parent)
-        # add fullname widgets
-        self.addWidget(self.fullname_lbl, 2, 0)
-        self.addWidget(self.fullname_entry, 3, 0)
-        # setup description widgets
-        self.desc_lbl = QLabel('<b>Description</b>', parent)
-        self.desc_entry = KTextEdit(parent, 'description_entry')
-        # add description widgets
-        self.addWidget(self.desc_lbl, 4, 0)
-        self.addWidget(self.desc_entry, 5, 0)
-        # setup launch command widgets
-        self.launch_lbl = QLabel('<b>Launch command</b>', parent)
-        self.launch_entry = KLineEdit('%s.exe' % shortname, parent)
-        self.launch_dlg_button = KPushButton('...', parent, 'launch_dlg_button')
-        self.launch_dlg_button.connect(self.launch_dlg_button, SIGNAL('clicked()'),
-                                       self.select_launch_command)
-        # add launch command widgets
-        self.addWidget(self.launch_lbl, 0, 1)
-        self.addWidget(self.launch_entry, 1, 1)
-        self.addWidget(self.launch_dlg_button, 1, 2)
-        # setup dosboxpath widgets
-        self.dosboxpath_lbl = QLabel('<b>dosbox path</b>', parent)
-        main_dbox_path = self.config.get('DEFAULT', 'main_dosbox_path')
-        if not self.fullpath.startswith(main_dbox_path):
-            raise ValueError, '%s is not contained in %s' % (self.fullpath, main_dbox_path)
-        dbox_path = self.fullpath.split(main_dbox_path)[1]
-        while dbox_path.startswith('/'):
-            dbox_path = dbox_path[1:]
-        self.dosboxpath_entry = KLineEdit(dbox_path, parent)
-        # add dosboxpath widgets
-        self.addWidget(self.dosboxpath_lbl, 2, 1)
-        self.addWidget(self.dosboxpath_entry, 3, 1)
-        
-        
-    def select_launch_command(self):
-        if self.select_launch_command_dlg is None:
-            file_filter = "*.exe *.bat *.com|Dos Executables\n*|All Files"
-            dlg = KFileDialog(self.fullpath, file_filter,  self.parent(), 'select_launch_command_dlg', True)
-            dlg.connect(dlg, SIGNAL('okClicked()'), self.launch_command_selected)
-            dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_select_launch_command_dlg)
-            dlg.connect(dlg, SIGNAL('closeClicked()'), self.destroy_select_launch_command_dlg)
-            dlg.show()
-            self.select_launch_command_dlg = dlg
-        else:
-            # we shouldn't need this with a modal dialog
-            KMessageBox.error(self.parent(), opendlg_errormsg)
+    def setSource(self, *args):
+        print 'setSource called', args
+    # this is selected when a url is clicked
+    def setSourceOK(self, url):
+        #action, key, filename = split_url(url)
+        action, name = split_url(url)
+        print action, name
+        filehandler = self.app.game_fileshandler
+        if action == 'cleanup':
+            filehandler.cleanup_game(name)
+        elif action == 'prepare':
+            filehandler.prepare_game(name)
 
-    def destroy_select_launch_command_dlg(self):
-        self.select_launch_command_dlg = None
-
-    def launch_command_selected(self):
-        dlg = self.select_launch_command_dlg
-        url = dlg.selectedURL()
-        fullpath = str(url.path())
-        launch_command = os.path.basename(fullpath)
-        self.launch_entry.setText(launch_command)
-        self.select_launch_command_dlg = None
-        
-class AddNewGameDialog(KDialogBase):
-    def __init__(self, parent, fullpath, name='AddNewGameDialog'):
-        KDialogBase.__init__(self, parent, name)
-        self.resize(400, 300)
-        self.fullpath = fullpath
-        self._frame = QFrame(self)
-        self.setMainWidget(self._frame)
-        self.grid = AddNewGameLayout(self._frame, self.fullpath)
+        self.set_game_info(name)
         
 # text browser for game info
+# uses html
+# setSource method handles links, but kde-apidocs
+# recommend not using this method
 class InfoBrowser(KTextBrowser):
     def __init__(self, parent):
         KTextBrowser.__init__(self, parent)
@@ -145,23 +97,11 @@ class InfoBrowser(KTextBrowser):
             filehandler.cleanup_game(name)
         elif action == 'prepare':
             filehandler.prepare_game(name)
-
-        self.set_game_info(name)
-        
-        if action == 'new':
-            dlg = XattrDialog(self, filename)
-            dlg.connect(dlg, SIGNAL('okClicked()'), dlg.update_xattr)
-            dlg.show()
         elif action == 'edit':
-            value = xattr(filename).get(key)
-            dlg = XattrDialog(self, filename, key, value)
-            dlg.connect(dlg, SIGNAL('okClicked()'), dlg.update_xattr)
+            dlg = EditGameDataDialog(self, name)
             dlg.show()
-        elif action == 'delete':
-            dlg = XattrDialog(self, filename, key, action='delete')
-            dlg.connect(dlg, SIGNAL('okClicked()'), dlg.delete_xattr)
-            dlg.show()
-
+        # refresh the page
+        self.set_game_info(name)
 
 # about this program
 class AboutData(KAboutData):
@@ -203,8 +143,8 @@ class MainWindow(KMainWindow):
         self.initialize_important_game_data()
         self._treedict = {}
         # setup default view options
-        self.flat_tree_view = 'flat'
-        self.name_title_view = 'name'
+        self.flat_tree_view = self.config.get('mainwindow', 'flat_tree_view')
+        self.name_title_view = self.config.get('mainwindow', 'name_title_view')
         #self.resize(500, 450)
         self.initActions()
         self.initMenus()
@@ -215,12 +155,19 @@ class MainWindow(KMainWindow):
         self.listView = KListView(self.splitView, 'games_view')
         # fill listview
         self.initlistView()
+        # try to resize splitter
+        # this is a kind of ugly hack, but seems to work ok
+        x, y = self.config.get_xy('mainwindow', 'mainwindow_size')
+        self.splitView.setSizes([int(.1*x), int(.9*x)])
         # setup signals
         self.connect(self.listView,
                      SIGNAL('selectionChanged()'), self.selectionChanged)
         
         # place text browser in splitter
         self.textView = InfoBrowser(self.splitView)
+        # i may eventually use the KHTMLPart instead
+        # of the KTextBrowser
+        #self.textView = InfoPart(self.splitView)
         # set main widget
         self.setCentralWidget(self.splitView)
 
@@ -261,8 +208,11 @@ class MainWindow(KMainWindow):
         
     def refreshListView(self):
         self.listView.clear()
-        #handler = self.app.game_datahandler
-        #games = handler.get_game_names()
+        # the tree view option may get too long
+        # with a large number of games.  I have tried
+        # to make this fairly quick for a small number of
+        # directories, but a lot of directories will almost
+        # surely slow it down.
         if self.flat_tree_view == 'tree':
             self._treedict = {}
             self.listView.setRootIsDecorated(True)
@@ -299,20 +249,29 @@ class MainWindow(KMainWindow):
     def initActions(self):
         collection = self.actionCollection()
         self.quitAction = KStdAction.quit(self.close, collection)
-        self.newGenreAction = NewGenre(self.slotNewGenre, collection)
+        # new genre probably won't be implemented
+        #self.newGenreAction = NewGenre(self.slotNewGenre, collection)
         self.newGameAction = NewGame(self.slotNewGame, collection)
         self.launchDosboxAction = LaunchDosbox(self.slotLaunchDosbox, collection)
         self.flatViewAction = FlatView(self.slotFlatView, collection)
         self.treeViewAction = TreeView(self.slotTreeView, collection)
         self.nameViewAction = NameView(self.slotNameView, collection)
         self.titleViewAction = TitleView(self.slotTitleView, collection)
+        self.prepareAllGamesAction = PrepareAllGames(self.slotPrepareAllGames, collection)
+        self.cleanAllGamesAction = CleanAllGames(self.slotCleanAllGames, collection)
+        self.archiveAllGamesAction = ArchiveAllGames(self.slotArchiveAllGames, collection)
         
         
     def initMenus(self):
         mainmenu = KPopupMenu(self)
-        self.newGenreAction.plug(mainmenu)
+        # new genre probably won't be implemented
+        #self.newGenreAction.plug(mainmenu)
         self.newGameAction.plug(mainmenu)
         self.launchDosboxAction.plug(mainmenu)
+        mainmenu.insertSeparator()
+        self.prepareAllGamesAction.plug(mainmenu)
+        self.cleanAllGamesAction.plug(mainmenu)
+        self.archiveAllGamesAction.plug(mainmenu)
         self.quitAction.plug(mainmenu)
         optionmenu = KPopupMenu(self)
         self.flatViewAction.plug(optionmenu)
@@ -325,7 +284,8 @@ class MainWindow(KMainWindow):
 
     def initToolbar(self):
         toolbar = self.toolBar()
-        self.newGenreAction.plug(toolbar)
+        # new genre probably won't be implemented
+        #self.newGenreAction.plug(toolbar)
         self.newGameAction.plug(toolbar)
         self.launchDosboxAction.plug(toolbar)
         self.quitAction.plug(toolbar)
@@ -347,14 +307,18 @@ class MainWindow(KMainWindow):
     def destroy_add_new_game_dlg(self):
         self.add_new_game_dlg = None
         
+    # new genre probably won't be implemented
     def slotNewGenre(self):
         KMessageBox.information(self,
-                                'create new genre')
+                                'create new genre is unimplemented')
 
     def slotLaunchDosbox(self):
         game = self.listView.currentItem().game
-        self.app.dosbox.run_game(game)
-        #KMessageBox.information(self, 'launch %s in dosbox' % game)
+        if self.app.game_fileshandler.get_game_status(game):
+            self.app.dosbox.run_game(game)
+        else:
+            title = self.game_titles[game]
+            KMessageBox.error(self, '%s is unavailable' % title)
         
     def select_new_game_path(self):
         url = self.new_game_dir_dialog.url()
@@ -376,17 +340,9 @@ class MainWindow(KMainWindow):
     def add_new_game(self):
         print 'add_new_game'
         dlg = self.add_new_game_dlg
-        # setup keys for gamedata
-        name = str(dlg.grid.name_entry.text())
+        gamedata = dlg.get_gamedata_from_entries()
+        name = gamedata['name']
         if name not in self.game_names:
-            fullname = str(dlg.grid.fullname_entry.text())
-            desc = str(dlg.grid.desc_entry.text())
-            dosboxpath = str(dlg.grid.dosboxpath_entry.text())
-            launchcmd = str(dlg.grid.launch_entry.text())
-            # fill gamedata
-            gamedata = dict(name=name, fullname=fullname,
-                            description=desc, dosboxpath=dosboxpath,
-                            launchcmd=launchcmd)
             # add game to data handler
             handler = self.app.game_datahandler
             handler.add_new_game(gamedata)
@@ -421,6 +377,38 @@ class MainWindow(KMainWindow):
         #KMessageBox.information(self, 'set to title view')
         self.name_title_view = 'title'
         self.refreshListView()
+
+    def _available_games(self):
+        fhandler = self.app.game_fileshandler
+        return [g for g in self.game_names if fhandler.game_is_available(g)]
+
+    def _unavailable_games(self):
+        fhandler = self.app.game_fileshandler
+        return [g for g in self.game_names if not fhandler.game_is_available(g)]
+    
+    def _prepare_games(self, gamelist):
+        fhandler = self.app.game_fileshandler
+        for game in gamelist:
+            fhandler.prepare_game(game)
+
+    def _clean_games(self, gamelist):
+        fhandler = self.app.game_fileshandler
+        for game in gamelist:
+            fhandler.cleanup_game(game)
+    
+
+    def slotPrepareAllGames(self):
+        missing = self._unavailable_games()
+        self._prepare_games(missing)
+
+    def slotCleanAllGames(self):
+        available = self._available_games()
+        self._clean_games(available)
+
+    def slotArchiveAllGames(self):
+        available = self._available_games()
+        self._clean_games(available)
+        self._prepare_games(available)
     
 if __name__ == '__main__':
     print "testing module"

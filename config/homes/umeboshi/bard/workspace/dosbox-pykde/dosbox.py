@@ -1,31 +1,64 @@
 import os
 from ConfigParser import ConfigParser
 
+from base import makepaths
+
 DosboxConfigSections = ['sdl', 'dosbox', 'render', 'cpu', 'mixer',
                         'midi', 'sblaster', 'gus', 'speaker', 'bios', 'serial',
                         'dos', 'ipx', 'autoexec']
+
 # override default ConfigParser
 # to keep sections in order, and autoexec section last
+# currently this isn't done, autoexec section is unsupported
 class DosboxConfig(ConfigParser):
     pass
     
 
-# app is the KDE application class
+# app is the KDE application object
 class Dosbox(object):
     def __init__(self, app):
         self.app = app
         self.main_config_dir = self.app.main_config_dir
         self.default_config = os.path.join(self.main_config_dir, 'dosbox.conf.default')
+        self.tmp_parent_path = self.app.config.get('DEFAULT', 'tmp_parent_path')
         self._dosbox_binary = self.app.config.get('DEFAULT', 'dosbox_binary')
         
-        
+    def get_capture_path(self, name):
+        return os.path.join(self.main_config_dir, 'capture', name)
+
+    
+    def _mapper_filename(self, name):
+        return os.path.join(self.main_config_dir, 'configs', '%s.mapper.txt' % name)
+    
     def _configfilename(self, name):
+        fname = '%s.dosbox.conf' % name
+        return os.path.join(self.tmp_parent_path, fname)
+    
+    def _game_specific_configfilename(self, name):
         return os.path.join(self.main_config_dir, 'configs', '%s.dosboxrc' % name)
+    
+    
+    def generate_configuration(self, name):
+        config = DosboxConfig()
+        # order is default then game-specific
+        # game-specific overrides default
+        cfiles = [self.default_config, self._game_specific_configfilename(name)]
+        config.read(cfiles)
+        # setup capture directory
+        path = self.get_capture_path(name)
+        if not os.path.exists(path):
+            makepaths(path)
+        config.set('dosbox', 'captures', path)
+        mapperfile = self._mapper_filename(name)
+        if os.path.exists(mapperfile):
+            config.set('sdl', 'mapperfile', mapperfile)
+        config.write(file(self._configfilename(name), 'w'))
+        
 
     def conf_opt(self, name):
         configfilename = self._configfilename(name)
         if not os.path.isfile(configfilename):
-            configfilename = self.default_config
+            raise ExistsError, "%s doesn't exist." % configfilename
         return '-conf %s' % configfilename
 
     def _get_args(self, name):
@@ -48,7 +81,9 @@ class Dosbox(object):
         return cmd
     
     def run_game(self, name):
+        self.generate_configuration(name)
         cmd = self._cmd(name)
         os.system(cmd)
+
         
     

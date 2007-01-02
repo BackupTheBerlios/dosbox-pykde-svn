@@ -42,3 +42,4 @@ def split_url(url):
 def make_url(*args):
     return url_delimeter.join(args)
 
+opendlg_errormsg = 'There is already a dialog box open.  Close it or restart the program'

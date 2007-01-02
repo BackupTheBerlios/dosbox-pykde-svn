@@ -86,11 +86,14 @@ def cleanup_install_path(path, name=None):
     md5sumstext = zfile.read('md5sums.txt')
     md5sums = make_md5sum_dict(md5sumstext)
     for filename, md5hash in md5sums.items():
-        if md5sum(file(filename)) == md5hash:
-            print filename, 'ok, removing'
-            os.remove(filename)
+        if not os.path.exists(filename):
+            print filename, 'non-existant, skipping'
         else:
-            print filename, 'has changed, keeping'
+            if md5sum(file(filename)) == md5hash:
+                print filename, 'ok, removing'
+                os.remove(filename)
+            else:
+                print filename, 'has changed, keeping'
     # remove md5sums.txt file
     os.remove('md5sums.txt')
     
@@ -197,6 +200,10 @@ class GameFilesHandler(object):
         mainpath = MAIN_DOSBOX_PATH
         dosboxpath = self.datahandler.get_game_data(name)['dosboxpath']
         return os.path.join(mainpath, dosboxpath)
+    
+    # thinking about renaming get_game_status
+    def game_is_available(self, name):
+        return self.get_game_status(name)
     
     def get_game_status(self, name):
         fullpath = self._get_fullpath(name)

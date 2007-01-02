@@ -107,3 +107,51 @@ class TitleView(KAction):
         cut = KShortcut()
         KAction.__init__(self, item, cut, slot, parent, name)
 
+class PrepareAllGamesItem(KGuiItem):
+    def __init__(self):
+        text = QString('Prepare all missing games')
+        icon = QString('fill')
+        ttip = QString('Prepare all the missing games')
+        wtf = QString('Prepare all the missing games')
+        KGuiItem.__init__(self, text, icon, ttip, wtf)
+
+class PrepareAllGames(KAction):
+    def __init__(self, slot, parent):
+        item = PrepareAllGamesItem()
+        name = 'PrepareAllGames'
+        cut = KShortcut()
+        KAction.__init__(self, item, cut, slot, parent, name)
+        
+    
+class CleanAllGamesItem(KGuiItem):
+    def __init__(self):
+        text = QString('Cleanup all available games')
+        icon = QString('save_all')
+        ttip = QString('Backup and cleanup all available games')
+        wtf = QString('Backup and cleanup all available games')
+        KGuiItem.__init__(self, text, icon, ttip, wtf)
+
+class CleanAllGames(KAction):
+    def __init__(self, slot, parent):
+        item = CleanAllGamesItem()
+        name = 'CleanAllGames'
+        cut = KShortcut()
+        KAction.__init__(self, item, cut, slot, parent, name)
+        
+    
+class ArchiveAllGamesItem(KGuiItem):
+    def __init__(self):
+        text = QString('Archive/Prepare all available games')
+        icon = QString('stamp')
+        ttip = QString('Archive/Prepare all available games')
+        wtf = QString('Archive/Prepare all available games')
+        KGuiItem.__init__(self, text, icon, ttip, wtf)
+
+class ArchiveAllGames(KAction):
+    def __init__(self, slot, parent):
+        item = ArchiveAllGamesItem()
+        name = 'ArchiveAllGames'
+        cut = KShortcut()
+        KAction.__init__(self, item, cut, slot, parent, name)
+        
+    

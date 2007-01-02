@@ -134,20 +134,24 @@ class GameElementParser(ParserHelper):
         return gamedata
     
 class GameDataHandler(object):
-    def __init__(self, gamedata_dir):
-        self.gamedata_dir = gamedata_dir
+    def __init__(self, directories):
+        self.directories = directories
+        self.gamedata_dir = directories['games']
 
     def _gamedatafilename(self, name):
         return os.path.join(self.gamedata_dir, '%s.xml' % name)
-    
+
+    def _make_xmlfile(self, gamedata, filename):
+        element = GameElement(gamedata)
+        gamedatafile = file(filename, 'w')
+        element.writexml(gamedatafile)
+        
     def add_new_game(self, gamedata):
-        name = gamedata['name']
-        gamedatafilename = self._gamedatafilename(name)
+        gamedatafilename = self._gamedatafilename(gamedata['name'])
         if os.path.exists(gamedatafilename):
             raise ExistsError, "%s already exists. can't add as new." % gamedatafilename
-        element = GameElement(gamedata)
-        gamedatafile = file(gamedatafilename, 'w')
-        element.writexml(gamedatafile)
+        else:
+            self._make_xmlfile(gamedata, gamedatafilename)
         
     def get_game_names(self):
         ls = os.listdir(self.gamedata_dir)
@@ -160,6 +164,28 @@ class GameDataHandler(object):
         parser = GameElementParser(parsed_element)
         return parser.get_gamedata()
 
+    def update_game_data(self, gamedata):
+        filename = self._gamedatafilename(gamedata['name'])
+        self._make_xmlfile(gamedata, filename)
+
+    def get_title_screenshot_filename(self, name):
+        screenshots_path = os.path.join(self.directories['screenshots'], name)
+        return os.path.join(screenshots_path, 'title.png')
+        
+    # simple way to make title screenshot
+    # assumes a png picture is selected
+    # automatically overwrites whatever is already there
+    def make_title_screenshot(self, name, picpath):
+        title_pic_filename = self.get_title_screenshot_filename(name)
+        dirname, basename = os.path.split(title_pic_filename)
+        if not os.path.exists(dirname):
+            os.mkdir(dirname)
+        picdata = file(picpath).read()
+        title_pic_file = file(title_pic_filename, 'w')
+        title_pic_file.write(picdata)
+        title_pic_file.close()
+        
+        
 if __name__ == '__main__':
     xfile = file('amazon.xml')
     gdh = GameDataHandler('.')

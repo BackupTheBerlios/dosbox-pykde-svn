@@ -10,17 +10,38 @@ default_config = """
 __main_path:                %s """ % os.path.expanduser('~/')[:-1]
 default_config +="""
 __archive_parent_path:      %(__main_path)s/archives
+# path to the archives of freshly installed games
 installed_archives_path:	%(__archive_parent_path)s/dosbox-installed
+# path to the extras archives (backups of savegames and configs)
 extras_archives_path:	%(__archive_parent_path)s/dosbox-extras
+# the parent path for temporary manipulation
+# of extras archives contents
 tmp_parent_path:		/tmp/dosbox-area
+# the parent path to the installed dosbox games
 main_dosbox_path:	         %(__main_path)s/dosbox
-overwrite_extras_archives:	False
+# option to keep from overwriting extras archives
+# this should normally be set to true, as by default
+# all extras archives are rdiff-backup trees
+# this option is here in case we don't ever use
+# rdiff-backup.  Set this to False to keep all
+# backups of the extras archives
+overwrite_extras_archives:	True
 # the path to the dosbox binary
 # if already in the path, the default should be fine
 dosbox_binary:              dosbox
+# command to launch external weblinks
+launch_weblink:   kfmclient newTab %s
+#text editor command
+text_editor:      kate
 
 [mainwindow]
 mainwindow_size:  400, 600
+# default view types
+flat_tree_view:   flat
+name_title_view:  title
+
+[gamedata_dialog]
+dialog_size:   400, 300
 """ 
 
 main_config_dir = os.path.expanduser('~/.dosbox-pykde')
