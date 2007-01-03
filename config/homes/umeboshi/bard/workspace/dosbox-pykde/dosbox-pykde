@@ -1,12 +1,11 @@
 #!/usr/bin/python
 import os, sys
 
-# locate the modules
-# method inspired by dstat package
-_modpaths = ['/usr/local/share/dosbox-pykde', '/usr/share/dosbox-pykde']
 _dev_modpath ='DOSBOX_PYKDE_DEVELOPMENT_MODULES_PATH'
+_modpaths = ['/usr/local/share/dosbox-pykde/modules',
+             '/usr/share/dosbox-pykde/modules']
 if _dev_modpath in os.environ:
-    _modpaths.append(os.environ[_dev_modpath])
+    _modpaths.insert(1, _dev_modpath)
 for path in _modpaths:
     if os.path.isdir(path) and path not in sys.path:
         sys.path.insert(1, path)
