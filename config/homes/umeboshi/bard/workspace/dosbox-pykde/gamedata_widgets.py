@@ -208,6 +208,12 @@ class EditGameDataDialog(BaseGameDataDialog):
         gamedata = self.get_gamedata_from_entries()
         self.handler.update_game_data(gamedata)
         KMessageBox.information(self, 'Data updated for %s' % gamedata['fullname'])
+        # this dialog is currently only called from the InfoBrowser
+        parent = self.parent()
+        if parent.name() == 'InfoBrowser':
+            # this refreshes the document in the InfoBrowser
+            parent.set_game_info(gamedata['name'])
+            
         
     
 

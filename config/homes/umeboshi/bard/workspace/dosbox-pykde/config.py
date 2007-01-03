@@ -33,6 +33,11 @@ dosbox_binary:              dosbox
 launch_weblink:   kfmclient newTab %s
 #text editor command
 text_editor:      kate
+# whether the main_dosbox_path is mounted as c:
+# or the full path to the game is mounted ad c:
+# If this is set to True, all intermediate directory
+# names need to be <= 8 chars.
+cdrive_is_main_dosbox_path:    False
 
 [mainwindow]
 mainwindow_size:  400, 600

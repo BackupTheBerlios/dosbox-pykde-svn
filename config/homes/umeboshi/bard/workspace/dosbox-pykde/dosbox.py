@@ -64,14 +64,26 @@ class Dosbox(object):
     def _get_args(self, name):
         handler = self.app.game_datahandler
         gamedata = handler.get_game_data(name)
+        main_dosbox_path = self.app.config.get('DEFAULT', 'main_dosbox_path')
+        cdrive_is_main_dosbox_path = self.app.config.getboolean('DEFAULT',
+                                                         'cdrive_is_main_dosbox_path')
         dosboxpath = gamedata['dosboxpath']
-        launchcmd = '-c %s' % gamedata['launchcmd']
-        mount_opt = '-c "mount c %s"' % self.app.config.get('DEFAULT', 'main_dosbox_path')
-        cdrive_opt = '-c c:'
-        cd_path_opt = '-c "cd %s"' % dosboxpath
+        launchcmd = gamedata['launchcmd']
         conf_opt = self.conf_opt(name)
-        # order is mount_opt cdrive_opt cd_path_opt launchcmd conf_opt
-        args = '%s %s %s %s %s' % (mount_opt, cdrive_opt, cd_path_opt, launchcmd, conf_opt)
+        if cdrive_is_main_dosbox_path:
+            launchcmd_opt = '-c %s' % gamedata['launchcmd']
+            mount_opt = '-c "mount c %s"' % main_dosbox_path
+            cdrive_opt = '-c c:'
+            cd_path_opt = '-c "cd %s"' % dosboxpath
+            # order is mount_opt cdrive_opt cd_path_opt launchcmd conf_opt
+            # mount c: -- 'cd' to c: -- cd $dosboxpath -- launchcmd
+            args = ' '.join([mount_opt, cdrive_opt, cd_path_opt, launchcmd_opt, conf_opt])
+        else:
+            # using this method may allow longfilenames in intermediate paths
+            # this isn't tested yet
+            fullpath = os.path.join(main_dosbox_path, dosboxpath, launchcmd)
+            # args are much smaller with option
+            args = '%s %s' % (fullpath, conf_opt)
         return args
     
     def _cmd(self, name):

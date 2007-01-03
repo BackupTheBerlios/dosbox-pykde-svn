@@ -31,7 +31,12 @@ class BaseDocument(SimpleDocument):
         desc_lbl_cell = TableCell(desc_lbl, colspan=0, align='center', bgcolor='DarkSeaGreen4')
         desc_lbl_row = TableRow(desc_lbl_cell)
         self.maintable.append(desc_lbl_row)
-        desc = TableCell(gamedata['description'], colspan=0)
+        description = gamedata['description']
+        # special check to handle blank description
+        # this is the only field that is likely to be blank
+        if description is None:
+            description = ''
+        desc = TableCell(description, colspan=0)
         desc_row = TableRow(desc)
         self.maintable.append(desc_row)
         # setup title screenshot section

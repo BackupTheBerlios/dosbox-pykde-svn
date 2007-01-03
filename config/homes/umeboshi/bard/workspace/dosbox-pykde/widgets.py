@@ -77,13 +77,25 @@ class InfoPart(KHTMLPart):
 # setSource method handles links, but kde-apidocs
 # recommend not using this method
 class InfoBrowser(KTextBrowser):
-    def __init__(self, parent):
-        KTextBrowser.__init__(self, parent)
+    def __init__(self, parent, name='InfoBrowser'):
+        KTextBrowser.__init__(self, parent, name)
         self.app = KApplication.kApplication()
         self.setNotifyClick(True)
         self.doc = BaseDocument(self.app)
-
+        # setup dialog pointers
+        self.select_title_screenshot_dlg = None
+        
     def set_game_info(self, name):
+        # the following two lines used to work fine
+        # but don't now
+        #self.doc.set_info(name)
+        #self.setText(self.doc.output())
+        # so instead we do this quick hack
+        # make a new document
+        self.doc = BaseDocument(self.app)
+        # display empty document
+        self.setText(self.doc.output())
+        # continue with what used to work
         self.doc.set_info(name)
         self.setText(self.doc.output())
         
@@ -91,7 +103,6 @@ class InfoBrowser(KTextBrowser):
     def setSource(self, url):
         #action, key, filename = split_url(url)
         action, name = split_url(url)
-        print action, name
         filehandler = self.app.game_fileshandler
         if action == 'cleanup':
             filehandler.cleanup_game(name)
@@ -100,9 +111,43 @@ class InfoBrowser(KTextBrowser):
         elif action == 'edit':
             dlg = EditGameDataDialog(self, name)
             dlg.show()
+        elif action == 'set_title_screenshot':
+            self.select_title_screenshot(name)
+        else:
+            KMessageBox.error(self, '%s is unimplemented.' % action)
         # refresh the page
         self.set_game_info(name)
 
+    def select_title_screenshot(self, name):
+        if self.select_title_screenshot_dlg is None:
+            file_filter = "*.png|PNG Images\n*|All Files"
+            path = self.app.dosbox.get_capture_path(name)
+            dlg = KFileDialog(path, file_filter, self, 'select_title_screenshot_dlg', True)
+            dlg.connect(dlg, SIGNAL('okClicked()'), self.title_screenshot_selected)
+            dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_select_title_screenshot_dlg)
+            dlg.connect(dlg, SIGNAL('closeClicked()'), self.destroy_select_title_screenshot_dlg)
+            dlg.game_name = name
+            dlg.show()
+            self.select_title_screenshot_dlg = dlg
+        else:
+            # we shouldn't need this with a modal dialog
+            KMessageBox.error(self, opendlg_errormsg)
+
+    def title_screenshot_selected(self):
+        print 'screenshot selected'
+        dlg = self.select_title_screenshot_dlg
+        url = dlg.selectedURL()
+        fullpath = str(url.path())
+        print 'screenshot at', fullpath
+        name = dlg.game_name
+        handler = self.app.game_datahandler
+        handler.make_title_screenshot(name, fullpath)
+        self.destroy_select_title_screenshot_dlg()
+        self.set_game_info(name)
+        
+    def destroy_select_title_screenshot_dlg(self):
+        self.select_title_screenshot_dlg = None
+        
 # about this program
 class AboutData(KAboutData):
     def __init__(self):
