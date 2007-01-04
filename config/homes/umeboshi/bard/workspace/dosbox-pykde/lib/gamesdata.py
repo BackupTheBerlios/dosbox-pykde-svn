@@ -72,8 +72,10 @@ class BaseTextElement(BaseElement):
         if self.hasChildNodes():
             return self.firstChild.data.encode().strip()
         else:
-            return None
+            return ''
 
+    # this method is used to "reform" a parsed element
+    # so we can use get, set on the parsed element
     def reform(self, element):
         name = element.tagName.encode()
         if element.hasChildNodes():
@@ -83,7 +85,10 @@ class BaseTextElement(BaseElement):
                 value = None
         else:
             value = None
-        BaseTextElement.__init__(self, name, value)
+        atts = {}
+        for att in dict(element.attributes):
+            atts[att.encode()] = element.getAttribute(att).encode()
+        BaseTextElement.__init__(self, name, value, **atts)
 
 class DescriptionElement(BaseTextElement):
     def __init__(self, text):
@@ -100,6 +105,15 @@ class LaunchCmdElement(BaseTextElement):
 class DosboxPathElement(BaseTextElement):
     def __init__(self, path):
         BaseTextElement.__init__(self, 'dosboxpath', path)
+
+class WeblinkSectionElement(BaseElement):
+    def __init__(self):
+        BaseElement.__init__(self, 'weblinks')
+        
+class WeblinkElement(BaseTextElement):
+    def __init__(self, site, url):
+        BaseTextElement.__init__(self, 'weblink', url, site=site)
+        
         
 class GameElement(BaseElement):
     def __init__(self, gamedata):
@@ -109,8 +123,15 @@ class GameElement(BaseElement):
         self.appendChild(DosboxPathElement(gamedata['dosboxpath']))
         self.appendChild(LaunchCmdElement(gamedata['launchcmd']))
         self.appendChild(DescriptionElement(gamedata['description']))
-        
-
+        weblink_section = WeblinkSectionElement()
+        self.appendChild(weblink_section)
+        # this if statement should be removed later
+        # once it's determined to be unnecessary
+        if gamedata.has_key('weblinks'):
+            weblinks = gamedata['weblinks']
+            for site in weblinks:
+                weblink_section.appendChild(WeblinkElement(site, weblinks[site]))
+            
 class GameElementParser(ParserHelper):
     def __init__(self, parsed_xml):
         self.game_element = self.get_single_element(parsed_xml, 'game')
@@ -125,12 +146,23 @@ class GameElementParser(ParserHelper):
                                                            'launchcmd', element)
         self.elements['dosboxpath'] = self.get_text_element(DosboxPathElement,
                                                             'dosboxpath', element)
+        # this should be a list, possibly empty
+        self.elements['weblinks'] = []
+        for e in self.get_elements_from_section(element, 'weblinks', 'weblink'):
+            wl = WeblinkElement('', '')
+            wl.reform(e)
+            self.elements['weblinks'].append(wl)
 
     def get_gamedata(self):
         gamedata = {}
         gamedata['name'] = self.name
         for key in ['fullname', 'description', 'launchcmd', 'dosboxpath']:
             gamedata[key] = self.elements[key].get()
+        gamedata['weblinks'] = {}
+        for element in self.elements['weblinks']:
+            site = element.getAttribute('site')
+            url = element.get()
+            gamedata['weblinks'][site] = url
         return gamedata
     
 class GameDataHandler(object):
@@ -187,6 +219,6 @@ class GameDataHandler(object):
         
         
 if __name__ == '__main__':
-    xfile = file('amazon.xml')
+    #xfile = file('amazon.xml')
     gdh = GameDataHandler('.')
     pp = gdh.get_game_data('bat')

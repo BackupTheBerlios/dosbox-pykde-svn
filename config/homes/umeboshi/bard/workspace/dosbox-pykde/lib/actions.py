@@ -2,6 +2,20 @@ from qt import QString
 from kdecore import KShortcut
 from kdeui import KGuiItem, KAction
 
+# this class taken from useless.kbase.actions
+# This is a quick way to make KGuiItem's
+class BaseItem(KGuiItem):
+    def __init__(self, text, icon, ttip, whatsit):
+        KGuiItem.__init__(self, QString(text), QString(icon), QString(ttip),
+                          QString(whatsit))
+        
+# this class will go into useless.kbase.actions later
+class BaseAction(KAction):
+    def __init__(self, item, name, slot, parent):
+        cut = KShortcut()
+        KAction.__init__(self, item, cut, slot, parent, name)
+        
+
 class NewGenreItem(KGuiItem):
     def __init__(self):
         text = QString('New genre')

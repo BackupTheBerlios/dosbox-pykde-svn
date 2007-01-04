@@ -30,7 +30,13 @@ overwrite_extras_archives:	True
 # if already in the path, the default should be fine
 dosbox_binary:              dosbox
 # command to launch external weblinks
-launch_weblink:   kfmclient newTab %s
+# The default command talks to a running konqueror process
+# and exits quickly, leaving konqueror to do the work
+# this command is executed with an os.system call, so any
+# command here needs to tell a running webbrowser to open a link
+# then exit, or this application will freeze waiting for the command
+# to finish executing.
+launch_weblink:   kfmclient newTab "%s"
 #text editor command
 text_editor:      kate
 # whether the main_dosbox_path is mounted as c:

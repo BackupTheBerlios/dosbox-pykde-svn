@@ -16,6 +16,7 @@ class BaseDocument(SimpleDocument):
     def __init__(self, app, title='BaseDocument', **args):
         SimpleDocument.__init__(self, title=title)
         self.app = app
+        self.gamedata = {}
         self.filehandler = app.game_fileshandler
         self.datahandler = self.filehandler.datahandler
         self.maintable = Table(class_='BaseDocumentTable', border=1, cellspacing=0,
@@ -24,6 +25,7 @@ class BaseDocument(SimpleDocument):
 
     def set_info(self, name):
         gamedata = self.datahandler.get_game_data(name)
+        self.gamedata = gamedata
         fullname = TableHeader(gamedata['fullname'], colspan=0, align='center')
         fullname_row = TableRow(fullname)
         self.maintable.set(fullname_row)
@@ -50,9 +52,19 @@ class BaseDocument(SimpleDocument):
         dosbox_data_row = TableRow()
         dosbox_data_cell = TableCell(colspan=0)
         dosbox_data_row.set(dosbox_data_cell)
-        dosbox_data_cell.append(self.make_dosbox_data_table(gamedata))
+        dosbox_data_cell.append(self.make_dosbox_data_table())
         self.maintable.append(dosbox_data_row)
 
+        # setup weblinks section
+        # don't bother creating this section unless
+        # there are some weblinks
+        if gamedata['weblinks']:
+            weblinks_table_row = TableRow()
+            weblinks_table_cell = TableCell(colspan=0)
+            weblinks_table_row.set(weblinks_table_cell)
+            weblinks_table_cell.set(self.make_weblinks_table())
+            self.maintable.append(weblinks_table_row)
+        
         # setup status and action section
         action_row = TableRow()
         action_cell = TableCell(colspan=0)
@@ -90,7 +102,8 @@ class BaseDocument(SimpleDocument):
         ss_table.append(ss_update_row)
         return ss_table
     
-    def make_dosbox_data_table(self, gamedata):
+    def make_dosbox_data_table(self):
+        gamedata = self.gamedata
         tableatts = dict(class_='dosboxdatatable', width='100%', border=0,
                          cellspacing=0)
         dosbox_data_table = Table(**tableatts)
@@ -139,3 +152,29 @@ class BaseDocument(SimpleDocument):
         edit_row.append(TableCell(edit_anchor))
         atable.append(edit_row)
         return atable
+
+    def make_weblinks_table(self):
+        gamedata = self.gamedata
+        name = gamedata['name']
+        tableatts = dict(class_='weblinkstable', width='100%', border=0,
+                         cellspacing=0)
+        wl_table = Table(**tableatts)
+        # setup header
+        lbl = TableHeader('Web Links', colspan=0, align='center')
+        row = TableRow(lbl)
+        wl_table.set(row)
+        weblinks = gamedata['weblinks'].keys()
+        weblinks.sort()
+        for weblink in weblinks:
+            row = TableRow()
+            # make a command url to tell the infobrowser
+            # to launch a web browser with the real url
+            # instead of using the game name we use the
+            # site name here
+            url = make_url('open_weblink', weblink)
+            anchor = Anchor(weblink, href=url)
+            cell = TableCell(anchor)
+            row.append(cell)
+            wl_table.append(row)
+        return wl_table
+        
