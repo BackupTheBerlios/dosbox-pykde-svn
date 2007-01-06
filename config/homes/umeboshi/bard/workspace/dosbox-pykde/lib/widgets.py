@@ -39,6 +39,20 @@ from infodoc import BaseDocument
 from gamedata_widgets import AddNewGameDialog
 from gamedata_widgets import EditGameDataDialog
 
+# testing this one
+from dcopexport import DCOPExObj
+
+# this is the handler that can be used through dcop
+# we will attach this to the app object
+# we won't add methods here, because they may not
+# be reachable yet.
+# we will use the .app objects in the widgets
+# then call self.app.dcop.addMethod('Qstring foo(QSomething)', self.say_something)
+# in that object.
+class DosboxHandler(DCOPExObj):
+    def __init__(self, id='dosbox-handler'):
+        DCOPExObj.__init__(self, id)
+        
 
 # would like to use this class, but don't
 # understand how to connect url clicks
@@ -185,7 +199,9 @@ class MainApplication(KApplication):
         KApplication.__init__(self)
         # in case something needs done before quitting
         self.connect(self, SIGNAL('aboutToQuit()'), self.quit)
-        
+        # place dcop object here
+        self.dcop = DosboxHandler()      
+
     def quit(self):
         KApplication.quit(self)
 
@@ -232,9 +248,14 @@ class MainWindow(KMainWindow):
         # setup dialog pointers
         self.new_game_dir_dialog = None
         self.add_new_game_dlg = None
+
+        # here we add some methods to the dcop object
+        self.app.dcop.addMethod('void selectGame (QString)',  self.selectGame)
+        self.app.dcop.addMethod('void launchSelectedGame()', self.slotLaunchDosbox)
         
     def initlistView(self):
-        self.listView.addColumn('genre', -1)
+        # the -1 is to set the column's WidthMode to Maximum instead of Manual
+        self.listView.addColumn('games', -1)
         self.refreshListView()
 
     def initialize_important_game_data(self):
@@ -302,8 +323,37 @@ class MainWindow(KMainWindow):
     def selectionChanged(self):
         item = self.listView.currentItem()
         if hasattr(item, 'game'):
-            self.textView.set_game_info(item.game)
-        
+            self.selectGame(item.game, called_externally=False)
+
+    # if this method is called externally, i.e. through dcop
+    # we need to select the KListViewItem that matches also
+    # if this method is not called externally, it means that the
+    # listitem has already been selected
+    def selectGame(self, name, called_externally=True):
+            if called_externally:
+                # if this method is called from dcop, name will be
+                # a QString, so we make it python string
+                name = str(name)
+                if name not in self.game_names:
+                    KMessageBox.error(self, '%s is not a valid game name.' % name)
+                else:
+                    if self.name_title_view is 'name':
+                        # this is the easy part
+                        # the 0 in the second arg means column
+                        item = self.listView.findItem(name, 0)
+                    else:
+                        # we're using titles, so we have to get it
+                        title = self.game_titles[name]
+                        item = self.listView.findItem(title, 0)
+                        # here True means select, False means unselect
+                        self.listView.setSelected(item, True)
+                        # calling setSelected will emit the selection changed signal
+                        # which will result in this method being called again, although
+                        # internally this time.
+            else:
+                # we only change the textView for internal calls
+                self.textView.set_game_info(name)
+
     def initActions(self):
         collection = self.actionCollection()
         self.quitAction = KStdAction.quit(self.close, collection)
@@ -370,8 +420,9 @@ class MainWindow(KMainWindow):
         KMessageBox.information(self,
                                 'create new genre is unimplemented')
 
-    def slotLaunchDosbox(self):
-        game = self.listView.currentItem().game
+    def slotLaunchDosbox(self, game=None):
+        if game is None:
+            game = self.listView.currentItem().game
         if self.app.game_fileshandler.get_game_status(game):
             self.app.dosbox.run_game(game)
         else:
