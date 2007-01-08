@@ -68,8 +68,9 @@ name_title_view:  title
 [gamedata_dialog]
 dialog_size:   400, 300
 """ 
-
+# need to fix main_config_dir to be os-independent
 main_config_dir = os.path.expanduser('~/.dosbox-pykde')
+
 configfilename = os.path.join(main_config_dir, 'dosbox-pykde.conf')
 if not os.path.exists(configfilename):
     configfile = file(configfilename, 'w')
@@ -92,7 +93,7 @@ class MyConfig(ConfigParser):
         
 # setup ConfigParser
 config = MyConfig()
-configfiles = [configfilename, './local-dosbox-pykde.conf']
+configfiles = [configfilename, 'local-dosbox-pykde.conf']
 config.read(configfiles)
 
 if __name__ == '__main__':

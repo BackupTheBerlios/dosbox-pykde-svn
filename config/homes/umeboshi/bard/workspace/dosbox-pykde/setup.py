@@ -16,7 +16,12 @@ class clean(_clean):
         _clean.run(self)
         compiled = glob.glob(os.path.join(modules_dir, '*.pyc'))
         map(os.remove, compiled)
-
+        for root, dirs, files in os.walk(os.getcwd()):
+            for afile in files:
+                if afile.endswith('~'):
+                    #print "removing backup file", os.path.join(root, afile)
+                    os.remove(os.path.join(root, afile))
+                    
 # override build command to compile modules
 class build(_build):
     def run(self):
