@@ -28,9 +28,8 @@ for dir_key in directories:
 
 from kdecore import KCmdLineArgs
 
-from kdelib.widgets import AboutData
-from kdelib.widgets import MainApplication
-from kdelib.widgets import MainWindow
+from kdelib.application import MainApplication, AboutData
+from kdelib.mainwindow import MainWindow
 
 from config import config
 from gamesdata import GameDataHandler
