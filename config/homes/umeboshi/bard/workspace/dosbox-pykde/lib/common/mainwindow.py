@@ -19,38 +19,10 @@ class MainWindowCommon(object):
         self.initActions()
         self.initMenus()
         self.initToolbar()
-        
-    def __init__orig__(self, parent):
-        #self.resize(500, 450)
-        # place a splitter in the window
-        self.splitView = QSplitter(self, 'splitView')
-        # place a listview in the splitter (on the left)
-        self.listView = KListView(self.splitView, 'games_view')
-        # fill listview
-        self.initlistView()
-        # try to resize splitter
-        # this is a kind of ugly hack, but seems to work ok
-        x, y = self.config.get_xy('mainwindow', 'mainwindow_size')
-        self.splitView.setSizes([int(.1*x), int(.9*x)])
-        # setup signals
-        self.connect(self.listView,
-                     SIGNAL('selectionChanged()'), self.selectionChanged)
-        
-        # place text browser in splitter
-        self.textView = InfoBrowser(self.splitView)
-        # i may eventually use the KHTMLPart instead
-        # of the KTextBrowser
-        #self.textView = InfoPart(self.splitView)
-        # set main widget
-        self.setCentralWidget(self.splitView)
 
         # setup dialog pointers
         self.new_game_dir_dialog = None
         self.add_new_game_dlg = None
-
-        # here we add some methods to the dcop object
-        self.app.dcop.addMethod('void selectGame (QString)',  self.selectGame)
-        self.app.dcop.addMethod('void launchSelectedGame()', self.slotLaunchDosbox)
         
     def initlistView(self):
         # the -1 is to set the column's WidthMode to Maximum instead of Manual

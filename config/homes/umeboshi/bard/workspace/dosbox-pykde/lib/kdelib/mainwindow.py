@@ -45,19 +45,24 @@ class MainWindow(MainWindowCommon, KMainWindow):
         KMainWindow.__init__(self, parent, 'PyKDE Dosbox Frontend')
         # setup app pointer
         self.app = KApplication.kApplication()
-        self.config = self.app.config
-        self.resize(*self.config.get_xy('mainwindow', 'mainwindow_size'))
+        self._init_common()
+
+        # from here to the splitView should be in _init_common
+        #self.config = self.app.config
+        #self.resize(*self.config.get_xy('mainwindow', 'mainwindow_size'))
         # initialize game data
-        self.initialize_important_game_data()
-        self._treedict = {}
-        self._show_filter = 'all'
+        #self.initialize_important_game_data()
+        #self._treedict = {}
+        #self._show_filter = 'all'
         # setup default view options
-        self.flat_tree_view = self.config.get('mainwindow', 'flat_tree_view')
-        self.name_title_view = self.config.get('mainwindow', 'name_title_view')
+        #self.flat_tree_view = self.config.get('mainwindow', 'flat_tree_view')
+        #self.name_title_view = self.config.get('mainwindow', 'name_title_view')
         #self.resize(500, 450)
-        self.initActions()
-        self.initMenus()
-        self.initToolbar()
+        #self.initActions()
+        #self.initMenus()
+        #self.initToolbar()
+
+        
         # place a splitter in the window
         self.splitView = QSplitter(self, 'splitView')
         # place a listview in the splitter (on the left)

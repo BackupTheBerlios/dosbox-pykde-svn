@@ -51,7 +51,8 @@ sys.modules['qt'].__dict__['qApp'] = app
 #from widgets import MainApplication
 #from qtwin.widgets import MainApplication
 
-from qtwin.widgets import MainWindow
+#from qtwin.widgets import MainWindow
+from qtwin.mainwindow import MainWindow
 
 from config import config
 from gamesdata import GameDataHandler
