@@ -26,11 +26,32 @@ for dir_key in directories:
     if not os.path.exists(path):
         os.mkdir(path)
 
-from kdecore import KCmdLineArgs
+from qt import SIGNAL, SLOT
+from qt import QApplication
+        
+# main application class
+# we define the class here for now
+class MainApplication(QApplication):
+    def __init__(self, args):
+        QApplication.__init__(self, args)
+        # in case something needs done before quitting
+        self.connect(self, SIGNAL('aboutToQuit()'), self.quit)
+        self.appname = 'MainApplication'
+        
+    def quit(self):
+        QApplication.quit(self)
 
-from widgets import AboutData
-from widgets import MainApplication
-from widgets import MainWindow
+# We have to start the application before any other widgets are
+# imported, to get qApp to point back to the python instance of the
+# application.
+app = MainApplication(sys.argv)
+sys.modules['qt'].__dict__['qApp'] = app
+
+#from widgets import AboutData
+#from widgets import MainApplication
+#from qtwin.widgets import MainApplication
+
+from qtwin.widgets import MainWindow
 
 from config import config
 from gamesdata import GameDataHandler
@@ -38,22 +59,16 @@ from filemanager import GameFilesHandler
 from dosbox import Dosbox
 
 if __name__ == '__main__':
-    aboutData = AboutData()
-    # I don't understand this part
-    KCmdLineArgs.init(sys.argv, aboutData)
-
     # setup application
-    app = MainApplication()
+    #app = MainApplication(sys.argv)
+    #sys.modules['qt'].__dict__['qApp'] = app
     app.config = config
     app.main_config_dir = main_config_dir
     app.main_dosbox_path = config.get('DEFAULT', 'main_dosbox_path')
     app.game_datahandler = GameDataHandler(directories)
     app.game_fileshandler = GameFilesHandler(app.game_datahandler)
     app.dosbox = Dosbox(app)
-    
-    # setup dcop and register the application
-    dcop = app.dcopClient()
-    appid = dcop.registerAs('dosbox-pykde')
+       
     win = MainWindow(None)
     win.show()
     # set main window in application
