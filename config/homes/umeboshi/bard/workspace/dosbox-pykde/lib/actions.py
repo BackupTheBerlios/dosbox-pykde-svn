@@ -14,7 +14,42 @@ class BaseAction(KAction):
     def __init__(self, item, name, slot, parent):
         cut = KShortcut()
         KAction.__init__(self, item, cut, slot, parent, name)
-        
+
+class FilterAvailableGamesItem(BaseItem):
+    def __init__(self):
+        txt = 'Show available games'
+        BaseItem.__init__(self, txt, 'filter', txt, txt)
+
+class FilterAvailableGames(BaseAction):
+    def __init__(self, slot, parent):
+        BaseAction.__init__(self, FilterAvailableGamesItem(), 'FilterAvailableGames',
+                            slot, parent)
+
+
+
+class FilterUnavailableGamesItem(BaseItem):
+    def __init__(self):
+        txt = 'Show unavailable games'
+        BaseItem.__init__(self, txt, 'filter', txt, txt)
+
+class FilterUnavailableGames(BaseAction):
+    def __init__(self, slot, parent):
+        BaseAction.__init__(self, FilterUnavailableGamesItem(), 'FilterUnavailableGames',
+                            slot, parent)
+
+
+
+class FilterAllGamesItem(BaseItem):
+    def __init__(self):
+        txt = 'Show all games'
+        BaseItem.__init__(self, txt, 'filter', txt, txt)
+
+class FilterAllGames(BaseAction):
+    def __init__(self, slot, parent):
+        BaseAction.__init__(self, FilterAllGamesItem(), 'FilterAllGames',
+                            slot, parent)
+
+
 
 class NewGenreItem(KGuiItem):
     def __init__(self):

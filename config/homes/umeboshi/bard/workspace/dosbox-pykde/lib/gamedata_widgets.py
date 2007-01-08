@@ -51,6 +51,8 @@ class GameDataLayout(QGridLayout):
         # setup description widgets
         self.desc_lbl = QLabel('<b>Description</b>', parent)
         self.desc_entry = KTextEdit(parent, 'description_entry')
+        # set plain text format for description entry
+        self.desc_entry.setTextFormat(self.PlainText)
         # add description widgets
         self.addWidget(self.desc_lbl, 4, 0)
         #self.addWidget(self.desc_entry, 5, 0)
@@ -154,7 +156,7 @@ class BaseGameDataDialog(KDialogBase):
         # setup app pointer
         self.app = KApplication.kApplication()
         self.config = self.app.config
-        self.resize(*self.config.get_xy('gamedata_dialog', 'dialog_size'))
+        #self.resize(*self.config.get_xy('gamedata_dialog', 'dialog_size'))
         # we need a frame for the layout widget
         # the layout widget won't work with a window as parent
         self._frame = QFrame(self)
@@ -215,7 +217,7 @@ class AddNewGameDialog(BaseGameDataDialog):
             dosboxpath = dosboxpath[1:]
         gamedata = dict(name=shortname, fullname=fullname,
                         launchcmd=launchcmd, description=description,
-                        dosboxpath=dosboxpath)
+                        dosboxpath=dosboxpath, weblinks={})
         self._fill_layout(gamedata)
         
             

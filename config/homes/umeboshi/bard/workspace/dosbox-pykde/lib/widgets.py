@@ -20,6 +20,7 @@ from kdeui import KStdAction
 from kdeui import KPopupMenu
 from kdeui import KTextEdit
 from kdeui import KPushButton
+from kdeui import KProgressDialog
 
 from kfile import KDirSelectDialog
 from kfile import KFileDialog
@@ -32,8 +33,13 @@ from base import opendlg_errormsg
 from actions import NewGenre, NewGame, LaunchDosbox
 from actions import NameView, TitleView
 from actions import FlatView, TreeView
+# file management actions
 from actions import PrepareAllGames, CleanAllGames
 from actions import ArchiveAllGames
+# filter actions
+from actions import FilterAvailableGames
+from actions import FilterAllGames
+from actions import FilterUnavailableGames
 
 from infodoc import BaseDocument
 from gamedata_widgets import AddNewGameDialog
@@ -144,7 +150,13 @@ class InfoBrowser(KTextBrowser):
             KMessageBox.error(self, '%s is unimplemented.' % action)
         # refresh the page
         self.set_game_info(name)
-
+        # need to emit signal here for mainwin to pick up
+        # this method is ugly
+        if action in ['cleanup', 'prepare', 'edit']:
+            mainwin = self.parent().parent()
+            mainwin.refreshListView()
+            
+                        
     def select_title_screenshot(self, name):
         if self.select_title_screenshot_dlg is None:
             file_filter = "*.png|PNG Images\n*|All Files"
@@ -216,6 +228,7 @@ class MainWindow(KMainWindow):
         # initialize game data
         self.initialize_important_game_data()
         self._treedict = {}
+        self._show_filter = 'all'
         # setup default view options
         self.flat_tree_view = self.config.get('mainwindow', 'flat_tree_view')
         self.name_title_view = self.config.get('mainwindow', 'name_title_view')
@@ -279,11 +292,23 @@ class MainWindow(KMainWindow):
 
     def _appendListItem(self, parent, name):
         if self.name_title_view == 'name':
-            item = KListViewItem(parent, name)
+            item_label = name
         else:
-            fullname = self.game_titles[name]
-            item = KListViewItem(parent, fullname)
-        item.game = name
+            item_label = self.game_titles[name]
+        item = None
+        if self._show_filter == 'all':
+            item = KListViewItem(parent, item_label)
+        else:
+            fhandler = self.app.game_fileshandler
+            available = fhandler.get_game_status(name)
+            if self._show_filter == 'available':
+                if available:
+                    item = KListViewItem(parent, item_label)
+            elif self._show_filter == 'unavailable':
+                if not available:
+                    item = KListViewItem(parent, item_label)
+        if item is not None:
+            item.game = name
         
     def refreshListView(self):
         self.listView.clear()
@@ -353,7 +378,8 @@ class MainWindow(KMainWindow):
             else:
                 # we only change the textView for internal calls
                 self.textView.set_game_info(name)
-
+                
+    # Should probably start putting these actions into a dict
     def initActions(self):
         collection = self.actionCollection()
         self.quitAction = KStdAction.quit(self.close, collection)
@@ -368,6 +394,11 @@ class MainWindow(KMainWindow):
         self.prepareAllGamesAction = PrepareAllGames(self.slotPrepareAllGames, collection)
         self.cleanAllGamesAction = CleanAllGames(self.slotCleanAllGames, collection)
         self.archiveAllGamesAction = ArchiveAllGames(self.slotArchiveAllGames, collection)
+        self.filterAllGamesAction = FilterAllGames(self.slotFilterAllGames, collection)
+        self.filterAvailableGamesAction = FilterAvailableGames(self.slotFilterAvailableGames,
+                                                                   collection)
+        self.filterUnavailableGamesAction = FilterUnavailableGames(self.slotFilterUnavailableGames,
+                                                                   collection)
         
         
     def initMenus(self):
@@ -386,6 +417,10 @@ class MainWindow(KMainWindow):
         self.treeViewAction.plug(optionmenu)
         self.nameViewAction.plug(optionmenu)
         self.titleViewAction.plug(optionmenu)
+        optionmenu.insertSeparator()
+        self.filterAllGamesAction.plug(optionmenu)
+        self.filterAvailableGamesAction.plug(optionmenu)
+        self.filterUnavailableGamesAction.plug(optionmenu)
         self.menuBar().insertItem('&Main', mainmenu)
         self.menuBar().insertItem('&Options', optionmenu)
         self.menuBar().insertItem('&Help', self.helpMenu(''))
@@ -495,17 +530,51 @@ class MainWindow(KMainWindow):
         fhandler = self.app.game_fileshandler
         return [g for g in self.game_names if not fhandler.game_is_available(g)]
     
-    def _prepare_games(self, gamelist):
+    def _prepare_games_orig(self, gamelist):
         fhandler = self.app.game_fileshandler
         for game in gamelist:
             fhandler.prepare_game(game)
 
-    def _clean_games(self, gamelist):
+    def _clean_games_orig(self, gamelist):
         fhandler = self.app.game_fileshandler
         for game in gamelist:
             fhandler.cleanup_game(game)
-    
 
+    def _clean_games(self, gamelist):
+        self._perform_multigame_action(gamelist, 'cleanup_game')
+        
+    def _prepare_games(self, gamelist):
+        self._perform_multigame_action(gamelist, 'prepare_game')
+        
+    # here action is either 'cleanup_game'
+    # or 'prepare_game'
+    def _perform_multigame_action(self, gamelist, action):
+        fhandler = self.app.game_fileshandler
+        if not hasattr(fhandler, action):
+            raise StandardError, 'no %s attribute for game_fileshandler' % action
+        num_games = len(gamelist)
+        real_action = getattr(fhandler, action)
+        dlg = MultiGameProgressDialog(self)
+        dlg.resize(400, 200)
+        if action == 'prepare_game':
+            dlg.game_action = 'Prepare'
+        elif action == 'cleanup_game':
+            dlg.game_action = 'Clean up'
+            
+        progress = dlg.progressBar()
+        progress.setTotalSteps(num_games)
+        dlg.show()
+        index = 1
+        for game in gamelist:
+            print "PERFORM %s on %s, index %d" % (action, game, index)
+            progress.setProgress(index)
+            title = self.game_titles[game]
+            dlg.set_label(title)
+            self.app.processEvents()
+            real_action(game)
+            index += 1
+            
+        
     def slotPrepareAllGames(self):
         missing = self._unavailable_games()
         self._prepare_games(missing)
@@ -518,7 +587,32 @@ class MainWindow(KMainWindow):
         available = self._available_games()
         self._clean_games(available)
         self._prepare_games(available)
+
+    def slotFilterAllGames(self):
+        self._show_filter = 'all'
+        self.refreshListView()
+        
+    def slotFilterAvailableGames(self):
+        self._show_filter = 'available'
+        self.refreshListView()
+
+    def slotFilterUnavailableGames(self):
+        self._show_filter = 'unavailable'
+        self.refreshListView()
+
+class BaseProgressDialog(KProgressDialog):
+    def __init__(self, parent, name='BaseProgressDialog'):
+        KProgressDialog.__init__(self, parent, name)
+
+# make a progress dialog for operations spanning
+# multiple games
+class MultiGameProgressDialog(BaseProgressDialog):
+    def set_label(self, game):
+        message = '%s game <b>%s</b>' % (self.game_action, game)
+        self.setLabel(message)
     
+
+
 if __name__ == '__main__':
     print "testing module"
     

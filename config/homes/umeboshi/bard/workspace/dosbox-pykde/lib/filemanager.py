@@ -53,6 +53,14 @@ def determine_extras_archivename(name):
     archivename = os.path.join(EXTRAS_ARCHIVES_PATH, name)
     return archivename
 
+def get_md5sums_from_archive(zipfilename):
+    if not os.path.exists(zipfilename):
+        raise ExistsError, "%s doesn't exist." % zipfilename
+    zfile = ZipFile(zipfilename, 'r')
+    md5sumtext = zfile.read('md5sums.txt')
+    md5sums = make_md5sum_dict(md5sumtext)
+    return md5sums
+
 def archive_fresh_install(path, name=None):
     _checkifdir(path)
     here = os.getcwd()
@@ -61,7 +69,9 @@ def archive_fresh_install(path, name=None):
     zfilename = determine_install_zipfilename(path, name)
     if os.path.exists(zfilename):
         raise ExistsError, '%s already exists.' % zfilename
-    os.system('zip -r %s .' % zfilename)
+    zipcmd = config.get('filemanagement', 'zip_command') % zfilename
+    print 'zipcmd', zipcmd
+    os.system(zipcmd)
     os.chdir(here)
 
 def make_tmp_path(name):
@@ -80,17 +90,13 @@ def cleanup_install_path(path, name=None):
     here = os.getcwd()
     os.chdir(path)
     zfilename = determine_install_zipfilename(path, name)
-    if not os.path.exists(zfilename):
-        raise ExistsError, "%s doesn't exist." % zfilename
-    zfile = ZipFile(zfilename, 'r')
-    md5sumstext = zfile.read('md5sums.txt')
-    md5sums = make_md5sum_dict(md5sumstext)
+    md5sums = get_md5sums_from_archive(zfilename)
     for filename, md5hash in md5sums.items():
         if not os.path.exists(filename):
             print filename, 'non-existant, skipping'
         else:
             if md5sum(file(filename)) == md5hash:
-                print filename, 'ok, removing'
+                #print filename, 'ok, removing'
                 os.remove(filename)
             else:
                 print filename, 'has changed, keeping'
@@ -107,7 +113,7 @@ def cleanup_install_path(path, name=None):
         extract_extras_archive(name, archivename, tpath)
     # perform rdiff-backup
     os.chdir(path)
-    cmd = 'rdiff-backup . %s' % tpath
+    cmd = 'rdiff-backup -v0 . %s' % tpath
     print 'performing rdiff-backup of', name
     os.system(cmd)
     # rearchive extras
@@ -135,6 +141,13 @@ def cleanup_install_path(path, name=None):
     os.system('rm -fr %s' % path)
 
 
+def move_installed_files(path, name=None):
+    raise StandardError, "don't call this function yet."
+    _checkifdir(path)
+    here = os.getcwd()
+    os.chdir(path)
+    
+
 def prepare_game(path, name=None):
     here = os.getcwd()
     if os.path.exists(path):
@@ -147,7 +160,7 @@ def prepare_game(path, name=None):
     if not os.path.exists(zfilename):
         raise ExistsError, "%s doesn't exist" % zfilename
     # unzip fresh install
-    os.system('unzip %s' % zfilename)
+    os.system('unzip -q %s' % zfilename)
     if not os.path.exists(archivename):
         print "Using fresh install"
     else:
@@ -167,6 +180,26 @@ def prepare_game(path, name=None):
         os.system('rm -rf %s %s' % (tpath, staging_path))
     os.chdir(here)
     
+        
+# use python for zip operations
+# come back to this later
+def _python_fill_zip(zfilename):
+    zfile = ZipFile(zfilename, 'w')
+    for root, dirs, files in os.walk('./', topdown=True):
+        for filename in files:
+            fullpath = os.path.join(root, filename)
+            zfile.write(fullpath)
+        for dirname in dirs:
+            fullpath = os.path.join(root, dirname)
+            if not len(os.listdir(fullpath)):
+                zi = ZipInfo('foo')
+            print "skipping directory:  ", dirname
+            #zfile.write(fullpath)
+    zfile.close()
+
+def _python_unzip(zfilename, path):
+    pass
+
         
 
 class GameFilesHandler(object):
@@ -194,7 +227,7 @@ class GameFilesHandler(object):
     def cleanup_game(self, name):
         fullpath = self._get_fullpath(name)
         cleanup_install_path(fullpath, name)
-        
+
     # get full install path of named game
     def _get_fullpath(self, name):
         mainpath = MAIN_DOSBOX_PATH
@@ -212,23 +245,6 @@ class GameFilesHandler(object):
         else:
             return False
         
-# come back to this later
-def _python_fill_zip(zfilename):
-    zfile = ZipFile(zfilename, 'w')
-    for root, dirs, files in os.walk('./', topdown=True):
-        for filename in files:
-            fullpath = os.path.join(root, filename)
-            zfile.write(fullpath)
-        for dirname in dirs:
-            fullpath = os.path.join(root, dirname)
-            if not len(os.listdir(fullpath)):
-                zi = ZipInfo('foo')
-            zfile.write(fullpath)
-    zfile.close()
-    
-    
-        
-
 if __name__ == '__main__':
     af = archive_fresh_install
     af(os.getcwd(), 'test')

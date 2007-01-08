@@ -45,6 +45,20 @@ text_editor:      kate
 # names need to be <= 8 chars.
 cdrive_is_main_dosbox_path:    False
 
+# These are the commands used for file management.
+# pass
+[filemanagement]
+use_rdiff_backup:  True
+# if use_rdiff_backup is True, we restore to a staging
+# area and rsync it into the install path.  This is only needed
+# when rdiff-backup is used.
+use_rsync:  True
+# Use the command line zip and unzip programs
+use_zip:  True
+zip_command:  zip -q -r "%s" .
+unzip_command:  unzip -q "%s"
+
+
 [mainwindow]
 mainwindow_size:  400, 600
 # default view types
