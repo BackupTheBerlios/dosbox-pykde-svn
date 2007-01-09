@@ -1,5 +1,6 @@
 import os
 from qt import SIGNAL, SLOT
+from qt import PYSIGNAL
 from qt import QSplitter
 
 from kdecore import KApplication
@@ -20,6 +21,8 @@ from base import ExistsError
 
 # import actions
 from actions import NewGenre, NewGame, LaunchDosbox
+from actions import LaunchDosboxPrompt
+# view actions
 from actions import NameView, TitleView
 from actions import FlatView, TreeView
 # file management actions
@@ -79,6 +82,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         
         # place text browser in splitter
         self.textView = InfoBrowser(self.splitView)
+        self.connect(self.textView, PYSIGNAL('GameInfoSet'), self.selectGame)
         # i may eventually use the KHTMLPart instead
         # of the KTextBrowser
         #self.textView = InfoPart(self.splitView)
@@ -101,19 +105,29 @@ class MainWindow(MainWindowCommon, KMainWindow):
         # new genre probably won't be implemented
         #self.newGenreAction = NewGenre(self.slotNewGenre, collection)
         self.newGameAction = NewGame(self.slotNewGame, collection)
-        self.launchDosboxAction = LaunchDosbox(self.slotLaunchDosbox, collection)
+        self.launchDosboxAction = \
+                                LaunchDosbox(self.slotLaunchDosbox, collection)
+        self.launchDosboxPromptAction = \
+                                      LaunchDosboxPrompt(self.slotLaunchDosboxPrompt,
+                                                         collection)
         self.flatViewAction = FlatView(self.slotFlatView, collection)
         self.treeViewAction = TreeView(self.slotTreeView, collection)
         self.nameViewAction = NameView(self.slotNameView, collection)
         self.titleViewAction = TitleView(self.slotTitleView, collection)
-        self.prepareAllGamesAction = PrepareAllGames(self.slotPrepareAllGames, collection)
-        self.cleanAllGamesAction = CleanAllGames(self.slotCleanAllGames, collection)
-        self.archiveAllGamesAction = ArchiveAllGames(self.slotArchiveAllGames, collection)
-        self.filterAllGamesAction = FilterAllGames(self.slotFilterAllGames, collection)
-        self.filterAvailableGamesAction = FilterAvailableGames(self.slotFilterAvailableGames,
-                                                                   collection)
-        self.filterUnavailableGamesAction = FilterUnavailableGames(self.slotFilterUnavailableGames,
-                                                                   collection)
+        self.prepareAllGamesAction = \
+                                   PrepareAllGames(self.slotPrepareAllGames, collection)
+        self.cleanAllGamesAction = \
+                                 CleanAllGames(self.slotCleanAllGames, collection)
+        self.archiveAllGamesAction = \
+                                   ArchiveAllGames(self.slotArchiveAllGames, collection)
+        self.filterAllGamesAction = \
+                                  FilterAllGames(self.slotFilterAllGames, collection)
+        self.filterAvailableGamesAction = \
+                                        FilterAvailableGames(self.slotFilterAvailableGames,
+                                                             collection)
+        self.filterUnavailableGamesAction = \
+                                          FilterUnavailableGames(self.slotFilterUnavailableGames,
+                                                                 collection)
         
         
     def initMenus(self):
@@ -122,6 +136,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         #self.newGenreAction.plug(mainmenu)
         self.newGameAction.plug(mainmenu)
         self.launchDosboxAction.plug(mainmenu)
+        self.launchDosboxPromptAction.plug(mainmenu)
         mainmenu.insertSeparator()
         self.prepareAllGamesAction.plug(mainmenu)
         self.cleanAllGamesAction.plug(mainmenu)
@@ -146,6 +161,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         #self.newGenreAction.plug(toolbar)
         self.newGameAction.plug(toolbar)
         self.launchDosboxAction.plug(toolbar)
+        self.launchDosboxPromptAction.plug(toolbar)
         self.quitAction.plug(toolbar)
         
     def refreshListView(self):
@@ -179,6 +195,24 @@ class MainWindow(MainWindowCommon, KMainWindow):
                         # calling setSelected will emit the selection changed signal
                         # which will result in this method being called again, although
                         # internally this time.
+
+                        # here we make the selected item visible on the list
+                        # if it's not currently visible
+                        pos = item.itemPos()
+
+                        item_pos = item.itemPos()
+                        contentsY = self.listView.contentsY()
+                        contentsHeight = self.listView.contentsHeight()
+                        visibleHeight = self.listView.visibleHeight()
+                        #print 'item pos', item_pos
+                        #print 'contentsY', contentsY
+                        #print 'contentsHeight', contentsHeight
+                        #print 'visibleHeight', visibleHeight
+                        # visible range = contentsY + visibleHeight
+                        visible_range = range(contentsY, contentsY + visibleHeight)
+                        if item_pos not in visible_range:
+                            self.listView.setContentsPos(0, 0)
+                            self.listView.scrollBy(0, pos)
             else:
                 # we only change the textView for internal calls
                 self.textView.set_game_info(name)
@@ -200,14 +234,24 @@ class MainWindow(MainWindowCommon, KMainWindow):
                                 'create new genre is unimplemented')
 
     def slotLaunchDosbox(self, game=None):
+        self._launchdosbox_common(game, launch_game=True)
+
+    def slotLaunchDosboxPrompt(self, game=None):
+        self._launchdosbox_common(game, launch_game=False)
+
+    def _launchdosbox_common(self, game, launch_game=True):
         if game is None:
             game = self.listView.currentItem().game
         if self.app.game_fileshandler.get_game_status(game):
-            self.app.dosbox.run_game(game)
+            if launch_game:
+                self.app.dosbox.run_game(game)
+            else:
+                self.app.dosbox.launch_dosbox_prompt(game)
         else:
             title = self.game_titles[game]
             KMessageBox.error(self, '%s is unavailable' % title)
-        
+
+            
     def select_new_game_path(self):
         url = self.new_game_dir_dialog.url()
         fullpath = str(url.path())

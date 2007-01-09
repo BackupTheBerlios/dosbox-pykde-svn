@@ -1,5 +1,7 @@
 import os
 from qt import SIGNAL, SLOT
+from qt import PYSIGNAL
+from qt import QString
 
 from kdecore import KApplication
 
@@ -77,6 +79,8 @@ class InfoBrowser(KTextBrowser):
         # continue with what used to work
         self.doc.set_info(name)
         self.setText(self.doc.output())
+        #self.emit(SIGNAL('sourceChanged(QString)'), (QString(name)))
+        self.emit(PYSIGNAL('GameInfoSet'), (name,))
         
     # this is selected when a url is clicked
     def setSource(self, url):
@@ -109,12 +113,6 @@ class InfoBrowser(KTextBrowser):
             KMessageBox.error(self, '%s is unimplemented.' % action)
         # refresh the page
         self.set_game_info(name)
-        # need to emit signal here for mainwin to pick up
-        # this method is ugly
-        if action in ['cleanup', 'prepare', 'edit']:
-            mainwin = self.parent().parent()
-            mainwin.refreshListView()
-            
                         
     def select_title_screenshot(self, name):
         if self.select_title_screenshot_dlg is None:

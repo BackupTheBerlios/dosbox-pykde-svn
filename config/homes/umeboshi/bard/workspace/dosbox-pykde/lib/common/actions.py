@@ -80,4 +80,13 @@ ArchiveAllGamesData = dict(text=_ttip,
                            icon='stamp',
                            ttip=_ttip,
                            whatsit=_ttip)
+
+text = 'Launch Dosbox Prompt'
+_ttip = 'Launch Dosbox Prompt (with game as c:)'
+LaunchDosboxPromptData = dict(text=text,
+                          icon='terminal',
+                          ttip=_ttip,
+                          whatsit=_ttip)
+
 del _ttip
+del text

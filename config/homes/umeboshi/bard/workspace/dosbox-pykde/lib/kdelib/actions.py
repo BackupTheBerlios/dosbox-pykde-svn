@@ -15,7 +15,7 @@ from common.actions import TitleViewData
 from common.actions import PrepareAllGamesData
 from common.actions import CleanAllGamesData
 from common.actions import ArchiveAllGamesData
-
+from common.actions import LaunchDosboxPromptData
 
 class BaseItem(KGuiItem):
     def __init__(self, itemdata):
@@ -117,4 +117,7 @@ class ArchiveAllGames(KAction):
         cut = KShortcut()
         KAction.__init__(self, item, cut, slot, parent, name)
         
-    
+class LaunchDosboxPrompt(BaseAction):
+    def __init__(self, slot, parent):
+        BaseAction.__init__(self, LaunchDosboxPromptData, 'LaunchDosboxPrompt',
+                            slot, parent)

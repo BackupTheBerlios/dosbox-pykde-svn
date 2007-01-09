@@ -52,7 +52,11 @@ class Dosbox(object):
         mapperfile = self._mapper_filename(name)
         if os.path.exists(mapperfile):
             config.set('sdl', 'mapperfile', mapperfile)
-        config.write(file(self._configfilename(name), 'w'))
+        configfilename = self._configfilename(name)
+        dirname = os.path.dirname(configfilename)
+        if not os.path.exists(dirname):
+            makepaths(dirname)
+        config.write(file(configfilename, 'w'))
         
 
     def conf_opt(self, name):
@@ -61,7 +65,7 @@ class Dosbox(object):
             raise ExistsError, "%s doesn't exist." % configfilename
         return '-conf %s' % configfilename
 
-    def _get_args(self, name):
+    def _get_args(self, name, launch_game=True, use_config=True):
         handler = self.app.game_datahandler
         gamedata = handler.get_game_data(name)
         main_dosbox_path = self.app.config.get('DEFAULT', 'main_dosbox_path')
@@ -69,7 +73,9 @@ class Dosbox(object):
                                                          'cdrive_is_main_dosbox_path')
         dosboxpath = gamedata['dosboxpath']
         launchcmd = gamedata['launchcmd']
-        conf_opt = self.conf_opt(name)
+        conf_opt = None
+        if use_config:
+            conf_opt = self.conf_opt(name)
         if cdrive_is_main_dosbox_path:
             launchcmd_opt = '-c %s' % gamedata['launchcmd']
             mount_opt = '-c "mount c %s"' % main_dosbox_path
@@ -80,14 +86,22 @@ class Dosbox(object):
             args = ' '.join([mount_opt, cdrive_opt, cd_path_opt, launchcmd_opt, conf_opt])
         else:
             # using this method may allow longfilenames in intermediate paths
-            # this isn't tested yet
-            fullpath = os.path.join(main_dosbox_path, dosboxpath, launchcmd)
+            if launch_game:
+                fullpath = os.path.join(main_dosbox_path, dosboxpath, launchcmd)
+            else:
+                fullpath = os.path.join(main_dosbox_path, dosboxpath)
             # args are much smaller with option
-            args = '%s %s' % (fullpath, conf_opt)
+            if conf_opt is None:
+                args = fullpath
+            else:
+                args = '%s %s' % (fullpath, conf_opt)
         return args
-    
-    def _cmd(self, name):
-        args = self._get_args(name)
+
+    # default args to None here instead of ''
+    # if args is '', then just dosbox is run
+    def _cmd(self, name, args=None):
+        if args is None:
+            args = self._get_args(name)
         cmd = '%s %s' % (self._dosbox_binary, args)
         print 'dosbox cmd -- ', cmd
         return cmd
@@ -95,6 +109,13 @@ class Dosbox(object):
     def run_game(self, name):
         self.generate_configuration(name)
         cmd = self._cmd(name)
+        os.system(cmd)
+
+    def launch_dosbox_prompt(self, name, genconfig=True):
+        if genconfig:
+            self.generate_configuration(name)
+        args = self._get_args(name, launch_game=False, use_config=genconfig)
+        cmd = self._cmd(name, args)
         os.system(cmd)
 
         
