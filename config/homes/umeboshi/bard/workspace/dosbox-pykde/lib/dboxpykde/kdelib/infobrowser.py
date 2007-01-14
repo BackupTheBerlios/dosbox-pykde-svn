@@ -13,11 +13,11 @@ from kfile import KFileDialog
 
 from khtml import KHTMLPart
 
-from base import split_url
-from base import opendlg_errormsg
-from base import ExistsError
+from dboxpykde.base import split_url
+from dboxpykde.base import opendlg_errormsg
+from dboxpykde.base import ExistsError
 
-from infodoc import BaseDocument
+from dboxpykde.infodoc import BaseDocument
 
 from gamedata_widgets import EditGameDataDialog
 

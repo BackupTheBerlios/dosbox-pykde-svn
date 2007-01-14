@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 from zipfile import ZipFile, ZipInfo
 
-from base import makepaths
+from dboxpykde.base import makepaths
 
 class MyZipFile(ZipFile):
     def _extract_file(self, name, path):

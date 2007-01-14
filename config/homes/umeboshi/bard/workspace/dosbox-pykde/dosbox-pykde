@@ -28,13 +28,13 @@ for dir_key in directories:
 
 from kdecore import KCmdLineArgs
 
-from kdelib.application import MainApplication, AboutData
-from kdelib.mainwindow import MainWindow
+from dboxpykde.kdelib.application import MainApplication, AboutData
+from dboxpykde.kdelib.mainwindow import MainWindow
 
-from config import config
-from gamesdata import GameDataHandler
-from filemanager import GameFilesHandler
-from dosbox import Dosbox
+from dboxpykde.config import config
+from dboxpykde.gamesdata import GameDataHandler
+from dboxpykde.filemanagement.main import GameFilesHandler
+from dboxpykde.dosbox import Dosbox
 
 if __name__ == '__main__':
     aboutData = AboutData()

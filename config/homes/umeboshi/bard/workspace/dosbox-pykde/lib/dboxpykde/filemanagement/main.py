@@ -2,13 +2,11 @@ import os, sys
 import shutil
 from zipfile import ZipFile
 
-from base import ExistsError, FileError
-from base import md5sum, makepaths
+from dboxpykde.base import ExistsError, FileError
+from dboxpykde.base import md5sum, makepaths
 
-from config import config
+from dboxpykde.config import config
 from myzipfile import MyZipFile
-
-from base import NotUsedAnymoreError
 
 # default locations
 INSTALLED_ARCHIVES_PATH = config.get('DEFAULT', 'installed_archives_path')

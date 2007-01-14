@@ -1,7 +1,7 @@
 import os
 from ConfigParser import ConfigParser
 
-from base import makepaths
+from dboxpykde.base import makepaths
 
 DosboxConfigSections = ['sdl', 'dosbox', 'render', 'cpu', 'mixer',
                         'midi', 'sblaster', 'gus', 'speaker', 'bios', 'serial',

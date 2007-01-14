@@ -14,9 +14,9 @@ from kdeui import KPopupMenu
 
 from kfile import KDirSelectDialog
 
-from base import split_url
-from base import opendlg_errormsg
-from base import ExistsError
+from dboxpykde.base import split_url
+from dboxpykde.base import opendlg_errormsg
+from dboxpykde.base import ExistsError
 
 
 # import actions
@@ -40,7 +40,7 @@ from gamedata_widgets import EditGameDataDialog
 from infobrowser import InfoBrowser
 from progress_dialogs import MultiGameProgressDialog
 
-from common.mainwindow import MainWindowCommon
+from dboxpykde.common.mainwindow import MainWindowCommon
 
 # main window class
 class MainWindow(MainWindowCommon, KMainWindow):

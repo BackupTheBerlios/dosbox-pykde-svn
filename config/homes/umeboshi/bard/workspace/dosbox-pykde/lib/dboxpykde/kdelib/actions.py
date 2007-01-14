@@ -2,20 +2,20 @@ from qt import QString
 from kdecore import KShortcut
 from kdeui import KGuiItem, KAction
 
-from common.actions import FilterAvailableGamesData
-from common.actions import FilterUnavailableGamesData
-from common.actions import FilterAllGamesData
-from common.actions import NewGenreData
-from common.actions import NewGameData
-from common.actions import LaunchDosboxData
-from common.actions import FlatViewData
-from common.actions import TreeViewData
-from common.actions import NameViewData
-from common.actions import TitleViewData
-from common.actions import PrepareAllGamesData
-from common.actions import CleanAllGamesData
-from common.actions import ArchiveAllGamesData
-from common.actions import LaunchDosboxPromptData
+from dboxpykde.common.actions import FilterAvailableGamesData
+from dboxpykde.common.actions import FilterUnavailableGamesData
+from dboxpykde.common.actions import FilterAllGamesData
+from dboxpykde.common.actions import NewGenreData
+from dboxpykde.common.actions import NewGameData
+from dboxpykde.common.actions import LaunchDosboxData
+from dboxpykde.common.actions import FlatViewData
+from dboxpykde.common.actions import TreeViewData
+from dboxpykde.common.actions import NameViewData
+from dboxpykde.common.actions import TitleViewData
+from dboxpykde.common.actions import PrepareAllGamesData
+from dboxpykde.common.actions import CleanAllGamesData
+from dboxpykde.common.actions import ArchiveAllGamesData
+from dboxpykde.common.actions import LaunchDosboxPromptData
 
 class BaseItem(KGuiItem):
     def __init__(self, itemdata):
