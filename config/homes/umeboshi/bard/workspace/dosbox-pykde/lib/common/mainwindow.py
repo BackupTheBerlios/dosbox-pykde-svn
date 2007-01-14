@@ -144,14 +144,20 @@ class MainWindowCommon(object):
     def select_new_game_path(self):
         raise NotImplementedError, "select_new_game_path not implemented in common class"
             
-    def add_new_game_common(self, name, gamedata):
+    def add_new_game_common(self, gamedata, path):
+        name = gamedata['name']
+        print self.game_names
         if name not in self.game_names:
-            # add game to data handler
-            handler = self.app.game_datahandler
-            handler.add_new_game(gamedata)
-            # archive as fresh install
+            # archive as fresh install first
+            #print 'archive as fresh install'
             filehandler = self.app.game_fileshandler
-            filehandler.archive_fresh_install(name)
+            filehandler.add_new_game(gamedata, path)
+            
+            #filehandler.archive_fresh_install(name)
+            # add game to data handler
+            #print 'add game to data handler'
+            #handler = self.app.game_datahandler
+            #handler.add_new_game(gamedata)
             # update quick reference dictionaries
             self.update_important_game_data(name)
             # update the list
@@ -159,6 +165,7 @@ class MainWindowCommon(object):
             # now we should be done with this dialog
         else:
             self.add_new_game_dlg = None
+            print 'raising ExistsError'
             raise ExistsError, 'game %s already exists'
         self.add_new_game_dlg = None
         

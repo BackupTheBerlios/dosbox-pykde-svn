@@ -11,7 +11,9 @@ class FileError(StandardError):
 class TooManyElementsError(StandardError):
     pass
 
-        
+class NotUsedAnymoreError(StandardError):
+    pass
+
 def makepaths(*paths):
     for path in paths:
         try:

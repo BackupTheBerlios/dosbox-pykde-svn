@@ -257,7 +257,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         fullpath = str(url.path())
         name = os.path.basename(fullpath)
         if name not in self.game_names:
-            print name, fullpath
+            print name, fullpath, self.game_names
             if self.add_new_game_dlg is None:
                 dlg = AddNewGameDialog(self, fullpath)
                 dlg.connect(dlg, SIGNAL('okClicked()'), self.add_new_game)
@@ -274,9 +274,10 @@ class MainWindow(MainWindowCommon, KMainWindow):
         gamedata = dlg.get_gamedata_from_entries()
         name = gamedata['name']
         try:
-            self.add_new_game_common(name, gamedata)
-        except ExistsError:
-            KMessageBox.error('%s already exists' % name)
+            self.add_new_game_common(gamedata, dlg.fullpath)
+        except ExistsError, inst:
+            print 'here we are', inst
+            KMessageBox.error(self, '%s already exists' % inst.args)
             
     # here action is either 'cleanup_game'
     # or 'prepare_game'

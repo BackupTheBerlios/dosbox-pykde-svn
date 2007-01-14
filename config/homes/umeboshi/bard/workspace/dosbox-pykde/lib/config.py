@@ -1,6 +1,8 @@
 import os, sys
 from ConfigParser import ConfigParser
 
+from base import ExistsError
+
 default_config = """
 # configuration file for dosbox-pykde
 # all options starting with "__" are not used in the code,
@@ -84,8 +86,104 @@ if not os.path.exists(configfilename):
     configfile = file(configfilename, 'w')
     configfile.write(default_config)
     configfile.close()
-    
 
+default_dbox_config = """
+[ipx]
+ipx = false
+
+[render]
+scaler = normal2x
+aspect = false
+frameskip = 0
+
+[midi]
+device = default
+mpu401 = intelligent
+config = 
+
+[sblaster]
+dma = 1
+mixer = true
+oplrate = 22050
+irq = 7
+hdma = 5
+sbbase = 220
+sbtype = sb16
+oplmode = auto
+
+[mixer]
+rate = 22050
+prebuffer = 10
+nosound = false
+blocksize = 2048
+
+[gus]
+dma2 = 3
+gusbase = 240
+irq2 = 5
+ultradir = C:\ULTRASND
+irq1 = 5
+gus = true
+dma1 = 3
+gusrate = 22050
+
+[bios]
+joysticktype = 2axis
+
+[speaker]
+pcspeaker = true
+tandy = auto
+tandyrate = 22050
+disney = true
+pcrate = 22050
+
+[sdl]
+usescancodes = true
+fullscreen = false
+fulldouble = false
+mapperfile = mapper.txt
+sensitivity = 100
+priority = higher,normal
+windowresolution = original
+waitonerror = true
+output = surface
+autolock = true
+fullresolution = original
+
+[dos]
+umb = true
+ems = true
+xms = true
+
+[serial]
+serial3 = disabled
+serial1 = dummy
+serial4 = disabled
+serial2 = dummy
+
+[cpu]
+cycles = 3000
+cycledown = 20
+cycleup = 500
+core = normal
+
+[dosbox]
+machine = vga
+memsize = 16
+language = 
+captures = capture
+
+[autoexec]
+
+"""
+
+dbox_configfilename = 'dosbox.conf.default'
+local_config = os.path.join(main_config_dir, dbox_configfilename)
+if not os.path.exists(local_config):
+    local_configfile = file(local_config, 'w')
+    local_configfile.write(default_dbox_config)
+    local_configfile.close()
+        
 class MyConfig(ConfigParser):
     def __init__(self):
         ConfigParser.__init__(self)

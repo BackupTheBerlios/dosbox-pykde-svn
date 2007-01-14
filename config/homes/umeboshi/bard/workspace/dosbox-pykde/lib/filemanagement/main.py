@@ -1,4 +1,5 @@
 import os, sys
+import shutil
 from zipfile import ZipFile
 
 from base import ExistsError, FileError
@@ -6,6 +7,8 @@ from base import md5sum, makepaths
 
 from config import config
 from myzipfile import MyZipFile
+
+from base import NotUsedAnymoreError
 
 # default locations
 INSTALLED_ARCHIVES_PATH = config.get('DEFAULT', 'installed_archives_path')
@@ -16,41 +19,58 @@ MD5SUMS_FILENAME = config.get('filemanagement', 'md5sums_filename')
 
 makepaths(INSTALLED_ARCHIVES_PATH, EXTRAS_ARCHIVES_PATH)
 
-def generate_md5sums_python():
-    md5sums_file = file(MD5SUMS_FILENAME, 'w')
-    for root, dirs, files in os.walk('.', topdown=True):
-        for name in files:
-            filename = os.path.join(root, name)
-            if filename != MD5SUMS_FILENAME:
-                md = md5sum(file(filename))
-                line = '%s  %s\n' % (md, filename)
-                md5sums_file.write(line)
-    md5sums_file.close()
-    
-def generate_md5sums_system():
-    if os.path.exists('md5sums.txt'):
-        raise ExistsError, 'md5sums.txt already exists'
-    notregex = '-not -regex "./md5sums.txt"'
-    bashcmd = "find -type f %s -exec md5sum '{}' >> md5sums.txt \;" % notregex
-    os.system('bash -c "%s"' % bashcmd)
-
 def _checkifdir(path):
     if not os.path.isdir(path):
         raise FileError, "%s must be a directory" % path
+
+def copytree(srcpath, dstpath):
+    if not os.path.isdir(srcpath):
+        raise FileError, 'Source path %s is not a directory' % srcpath
+    makepaths(dstpath)
+    if not os.path.isdir(dstpath):
+        raise FileError, 'Destination path %s is not a directory' % dstpath
+    here = os.getcwd()
+    os.chdir(srcpath)
+    for root, dirs, files in os.walk('.', topdown=True):
+        newpath = os.path.join(dstpath, root)
+        makepaths(newpath)
+        for adir in dirs:
+            newdir = os.path.join(newpath, adir)
+            makepaths(newdir)
+        for afile in files:
+            oldfile = os.path.join(root, afile)
+            newfile = os.path.join(newpath, afile)
+            shutil.copystat(oldfile, newfile)
+            
+    os.chdir(here)
 
 def _itemize_md5sum_line(line):
     hashlen = 32
     return (line[hashlen:].strip(), line[:hashlen])
 
-def make_md5sum_dict(md5sumtext):
-    md5dict = {}
-    for line in md5sumtext.split('\n'):
-        if line:
-            k, v = _itemize_md5sum_line(line)
-            md5dict[k] = v
-    return md5dict
+def make_tmp_path(name):
+    tpath = os.path.join(TMP_PARENT_PATH, name)
+    makepaths(tpath)
+    return tpath
 
-def determine_install_zipfilename(path, name=None):
+def make_md5sum_dict(installed_files):
+    print 'called make_md5sum_dict'
+    return dict(installed_files)
+
+def generate_md5sums():
+    installed_files = []
+    for root, dirs, files in os.walk('.', topdown=True):
+        for name in files:
+            filename = os.path.join(root, name)
+            md = md5sum(file(filename))
+            installed_files.append((filename, md))
+    return installed_files
+
+
+def determine_install_zipfilename(path=None, name=None):
+    if path is not None:
+        msg = "we're not using path argument to determine_install_zipfilename anymore"
+        raise StandardError, msg
     suffix = '-installed.zip'
     if name is None:
         name = os.path.basename(path)
@@ -66,7 +86,17 @@ def determine_extras_archivename(name):
     archivename = os.path.join(EXTRAS_ARCHIVES_PATH, name)
     return archivename
 
+def determine_old_archivename(archivename):
+    oldnum = 1
+    oldarchive = '%s.bkup.%d' % (archivename, oldnum)
+    while os.path.exists(oldarchive):
+        oldnum += 1
+        oldarchive = '%s.bkup.%d' % (archivename, oldnum)
+    return oldarchive
+
 def get_md5sums_from_archive(zipfilename):
+    print 'get_md5sums_from_archive is deprecated'
+    raise StandardError, "don't call get_md5sums_from_archive"
     if not os.path.exists(zipfilename):
         raise ExistsError, "%s doesn't exist." % zipfilename
     zfile = ZipFile(zipfilename, 'r')
@@ -74,34 +104,106 @@ def get_md5sums_from_archive(zipfilename):
     md5sums = make_md5sum_dict(md5sumtext)
     return md5sums
 
-def archive_fresh_install(path, name=None):
-    _checkifdir(path)
+def extract_extras_archive_orig(name, archivename, tpath=None):
     here = os.getcwd()
-    os.chdir(path)
-    if config.getboolean('filemanagement', 'use_system_md5sum'):
-        generate_md5sums_system()
-    else:
-        generate_md5sums_python()
-    zfilename = determine_install_zipfilename(path, name)
-    if os.path.exists(zfilename):
-        raise ExistsError, '%s already exists.' % zfilename
-    zipcmd = config.get('filemanagement', 'zip_command') % zfilename
-    print 'zipcmd', zipcmd
-    os.system(zipcmd)
-    os.chdir(here)
-
-def make_tmp_path(name):
-    tpath = os.path.join(TMP_PARENT_PATH, name)
-    makepaths(tpath)
-    return tpath
-
-def extract_extras_archive(name, archivename, tpath=None):
     if tpath is None:
         tpath = make_tmp_path(name)
     os.chdir(tpath)
     os.system('tar xfj %s' % archivename)
+    os.chdir(here)
+
+# we use this function to determine the unchanged files
+# in the install path.
+def handle_installed_files(path, installed_files):
+    unchanged_files = []
+    _checkifdir(path)
+    here = os.getcwd()
+    os.chdir(path)
+    for filename, md5hash in installed_files:
+        if not os.path.exists(filename):
+            print filename, 'non-existant, skipping.'
+        else:
+            if md5sum(file(filename)) == md5hash:
+                unchanged_files.append(filename)
+            else:
+                print filename, 'has changed.'
+    os.chdir(here)
+    return unchanged_files
+
+# using the list of unchanged files we get from handle_installed_files
+# we remove, or move elsewhere, those files to prepare for archiving
+# the leftovers.  If remove is True, we remove the files (we can restore
+# them later from the installed archive).  If remove is False, we move them
+# temporarily to another directory (currently unhandled).
+def cleanup_unchanged_files(path, unchanged_files, remove=True):
+    _checkifdir(path)
+    here = os.getcwd()
+    if not remove:
+        newpath = '%s.tmp' % path
+        makepaths(newpath)
+    os.chdir(path)
+    if remove:
+        map(os.remove, unchanged_files)
+    else:
+        print "remove is false, but still unhandled"        
+    os.chdir(here)
+
+# this function extracts the extras archive for a game to a temporary
+# path, then returns that path
+def extract_extras_archive(name, extract_cmd='tar xfj'):
+    archivename = determine_extras_archivename(name)
+    if not os.path.exists(archivename):
+        raise ExistsError, "%s has no extras archive." % name
+    tpath = make_tmp_path(name)
+    here = os.getcwd()
+    os.chdir(tpath)
+    cmd = '%s %s' % (extract_cmd, archivename)
+    result = os.system(cmd)
+    if result:
+        raise OSError, "there was a problem with extract_extras_archive %s" % name
+    os.chdir(here)
+    return tpath
+
+# This function extracts the extras archive, then restores the
+# rdiff-backup, at "time", to a staging directory, removes the
+# temporary extracted path, then returns the staging path.
+def stage_rdiff_backup_archive(name, time='now'):
+    tpath = extract_extras_archive(name)
+    staging_path = '%s-staging' % tpath
+    makepaths(staging_path)
+    restore_cmd = 'rdiff-backup --force -r %s %s %s' % (time, tpath, staging_path)
+    result = os.system(restore_cmd)
+    if result:
+        raise OSError, "there was a problem with %s" % restore_cmd
+    # remove tpath
+    shutil.rmtree(tpath)
+    return staging_path
+
+def perform_rdiff_backup(path, backup_path):
+    if not os.path.isdir(backup_path):
+        raise ExistsError, "backup path %s doesn't exist" % backup_path
+    cmd = 'rdiff-backup -v0 %s %s' % (path, backup_path)
+    if os.system(cmd):
+        raise OSError, "something bad happened with perform_rdiff_backup"
     
-def cleanup_install_path(path, name=None):
+
+def archive_rdiff_backup_repos(name, path):
+    archivename = determine_extras_archivename(name)
+    if not config.getboolean('DEFAULT', 'overwrite_extras_archives'):
+        oldarchive = determine_old_archivename(archivename)
+        if os.path.exists(archivename):
+            os.rename(archivename, oldarchive)
+    else:
+        if os.path.exists(archivename):
+            os.remove(archivename)
+    here = os.getcwd()
+    os.chdir(path)
+    cmd = 'tar cj . -f %s' % archivename
+    if os.system(cmd):
+        raise OSError, "something bad happened with archive_rdiff_backup_repos"
+    os.chdir(here)
+    
+def cleanup_install_path_orig(path, name=None):
     _checkifdir(path)
     here = os.getcwd()
     os.chdir(path)
@@ -200,27 +302,6 @@ def prepare_game(path, name=None):
     os.chdir(here)
     
         
-# use python for zip operations
-# come back to this later
-def _python_fill_zip(zfilename):
-    zfile = ZipFile(zfilename, 'w')
-    for root, dirs, files in os.walk('./', topdown=True):
-        for filename in files:
-            fullpath = os.path.join(root, filename)
-            zfile.write(fullpath)
-        for dirname in dirs:
-            fullpath = os.path.join(root, dirname)
-            if not len(os.listdir(fullpath)):
-                zi = ZipInfo('foo')
-            print "skipping directory:  ", dirname
-            #zfile.write(fullpath)
-    zfile.close()
-
-def _python_unzip(zfilename, path):
-    zfile = ZipFile(zfilename, 'r')
-
-        
-
 class GameFilesHandler(object):
     def __init__(self, datahandler):
         # datahandler should be GameDataHandler object
@@ -234,12 +315,35 @@ class GameFilesHandler(object):
         fullpath = self._get_fullpath(name)
         prepare_game(fullpath, name)
 
-    # archive a fresh game install
-    def archive_fresh_install(self, name):
-        fullpath = self._get_fullpath(name)
-        archive_fresh_install(fullpath, name)
+    def _report_add_to_installed_archive(self, filename, count, total):
+        method = '_report_add_to_installed_archive'
+        print '%s -> %s, %d of %d' % (method, filename, count, total)
         
-
+    # archive a fresh game install
+    def archive_fresh_install(self, gamedata, path):
+        name = gamedata['name']
+        fullpath = path
+        _checkifdir(fullpath)
+        here = os.getcwd()
+        os.chdir(path)
+        installed_files = generate_md5sums()
+        zfilename = determine_install_zipfilename(fullpath, name)
+        if os.path.exists(zfilename):
+            raise ExistsError, 'Installed zipfile for %s already exists.' % name
+        zfile = MyZipFile(zfilename, 'w')
+        zfile.archive_path(path='.', report=self._report_add_to_installed_archive)
+        zfile.close()
+        os.chdir(here)
+        return installed_files
+    
+        
+    def add_new_game(self, gamedata, path):
+        print 'archive as fresh install'
+        installed_files = self.archive_fresh_install(gamedata, path)
+        print 'archived %d files' % len(installed_files)
+        self.datahandler.add_new_game(gamedata, installed_files)
+        print 'added game %s to datahandler' % gamedata['name']
+        
     # remove files already in install archive and backup
     # remaining files in extras archive (using rdiff-backup)
     # then remove files
@@ -266,5 +370,5 @@ class GameFilesHandler(object):
         
 if __name__ == '__main__':
     af = archive_fresh_install
-    af(os.getcwd(), 'test')
+    #af(os.getcwd(), 'test')
     
