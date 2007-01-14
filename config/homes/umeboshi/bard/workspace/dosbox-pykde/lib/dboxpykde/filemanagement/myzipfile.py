@@ -38,6 +38,8 @@ class MyZipFile(ZipFile):
                 if basename:
                     self._extract_file(filename, path)
                 count += 1
+        else:
+            self._extract_file(name, path)
                 
     def archive_path(self, path=None, report=None):
         here = os.getcwd()
