@@ -11,12 +11,17 @@ class FileError(StandardError):
 class TooManyElementsError(StandardError):
     pass
 
-# this function taken from useless.base.util
+        
 def makepaths(*paths):
     for path in paths:
-        if not os.path.isdir(path):
+        try:
             os.makedirs(path)
-
+        except OSError, inst:
+            # expect the error 17, 'File exists'
+            if inst.args[0] == 17:
+                pass
+            else:
+                raise inst
 # default block size
 BLOCK_SIZE = 1024
 

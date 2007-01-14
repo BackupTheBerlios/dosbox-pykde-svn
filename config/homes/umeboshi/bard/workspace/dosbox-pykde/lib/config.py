@@ -55,9 +55,17 @@ use_rdiff_backup:  True
 use_rsync:  True
 # Use the command line zip and unzip programs
 use_zip:  True
+
+# the zip and unzip commands if use_zip above is true
 zip_command:  zip -q -r "%s" .
 unzip_command:  unzip -q "%s"
 
+# use system for generating md5sums file
+# depends on bash and find
+use_system_md5sum:  True
+
+# name of md5sums file
+md5sums_filename:  md5sums.txt
 
 [mainwindow]
 mainwindow_size:  400, 600

@@ -92,9 +92,9 @@ class Dosbox(object):
                 fullpath = os.path.join(main_dosbox_path, dosboxpath)
             # args are much smaller with option
             if conf_opt is None:
-                args = fullpath
+                args = '"%s"' % fullpath
             else:
-                args = '%s %s' % (fullpath, conf_opt)
+                args = '"%s" %s' % (fullpath, conf_opt)
         return args
 
     # default args to None here instead of ''

@@ -5,16 +5,29 @@ from base import ExistsError, FileError
 from base import md5sum, makepaths
 
 from config import config
+from myzipfile import MyZipFile
 
 # default locations
 INSTALLED_ARCHIVES_PATH = config.get('DEFAULT', 'installed_archives_path')
 EXTRAS_ARCHIVES_PATH = config.get('DEFAULT', 'extras_archives_path')
 TMP_PARENT_PATH = config.get('DEFAULT', 'tmp_parent_path')
 MAIN_DOSBOX_PATH = config.get('DEFAULT', 'main_dosbox_path')
+MD5SUMS_FILENAME = config.get('filemanagement', 'md5sums_filename')
 
 makepaths(INSTALLED_ARCHIVES_PATH, EXTRAS_ARCHIVES_PATH)
 
-def generate_md5sums():
+def generate_md5sums_python():
+    md5sums_file = file(MD5SUMS_FILENAME, 'w')
+    for root, dirs, files in os.walk('.', topdown=True):
+        for name in files:
+            filename = os.path.join(root, name)
+            if filename != MD5SUMS_FILENAME:
+                md = md5sum(file(filename))
+                line = '%s  %s\n' % (md, filename)
+                md5sums_file.write(line)
+    md5sums_file.close()
+    
+def generate_md5sums_system():
     if os.path.exists('md5sums.txt'):
         raise ExistsError, 'md5sums.txt already exists'
     notregex = '-not -regex "./md5sums.txt"'
@@ -65,7 +78,10 @@ def archive_fresh_install(path, name=None):
     _checkifdir(path)
     here = os.getcwd()
     os.chdir(path)
-    generate_md5sums()
+    if config.getboolean('filemanagement', 'use_system_md5sum'):
+        generate_md5sums_system()
+    else:
+        generate_md5sums_python()
     zfilename = determine_install_zipfilename(path, name)
     if os.path.exists(zfilename):
         raise ExistsError, '%s already exists.' % zfilename
@@ -160,7 +176,10 @@ def prepare_game(path, name=None):
     if not os.path.exists(zfilename):
         raise ExistsError, "%s doesn't exist" % zfilename
     # unzip fresh install
-    os.system('unzip -q %s' % zfilename)
+    #os.system('unzip -q %s' % zfilename)
+    unzip_cmd = config.get('filemanagement', 'unzip_command') % zfilename
+    os.system(unzip_cmd)
+    
     if not os.path.exists(archivename):
         print "Using fresh install"
     else:
@@ -198,7 +217,7 @@ def _python_fill_zip(zfilename):
     zfile.close()
 
 def _python_unzip(zfilename, path):
-    pass
+    zfile = ZipFile(zfilename, 'r')
 
         
 
