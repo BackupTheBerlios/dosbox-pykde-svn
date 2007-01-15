@@ -39,6 +39,8 @@ from gamedata_widgets import EditGameDataDialog
 
 from infobrowser import InfoBrowser
 from progress_dialogs import MultiGameProgressDialog
+# using BaseProgressDialog until a better class is made
+from progress_dialogs import BaseProgressDialog
 
 from dboxpykde.common.mainwindow import MainWindowCommon
 
@@ -269,16 +271,38 @@ class MainWindow(MainWindowCommon, KMainWindow):
             KMessageBox.error(self, '%s already exists.' % name)
         self.new_game_dir_dialog = None
 
+    def _report_add_to_installed_archive(self, filename, count, total):
+        dlg = self._add_to_installed_archive_progress
+        progress = dlg.progressBar()
+        if dlg.total is None:
+            dlg.total = total
+            progress.setTotalSteps(total)
+        dlg.setLabel('Adding %s to archive.' % filename)
+        progress.setProgress(count)
+        self.app.processEvents()
+        
     def add_new_game(self):
         dlg = self.add_new_game_dlg
         gamedata = dlg.get_gamedata_from_entries()
         name = gamedata['name']
+        fullpath = dlg.fullpath
+        dlg.close()
+        ### ugly section -- testing now -- cleanup later
+        filehandler = self.app.game_fileshandler
+        filehandler._report_add_to_installed_archive = self._report_add_to_installed_archive
+        self._add_to_installed_archive_progress = BaseProgressDialog(self)
+        dlg = self._add_to_installed_archive_progress
+        dlg.resize(400, 200)
+        dlg.total = None
+        dlg.show()
+        ##### end of ugly section
         try:
-            self.add_new_game_common(gamedata, dlg.fullpath)
+            self.add_new_game_common(gamedata, fullpath)
         except ExistsError, inst:
             print 'here we are', inst
             KMessageBox.error(self, '%s already exists' % inst.args)
-            
+        dlg.close()
+        
     # here action is either 'cleanup_game'
     # or 'prepare_game'
     def _perform_multigame_action(self, gamelist, action):
@@ -306,7 +330,8 @@ class MainWindow(MainWindowCommon, KMainWindow):
             self.app.processEvents()
             real_action(game)
             index += 1
-            
+        dlg.close()
+        
         
 if __name__ == '__main__':
     print "testing module"

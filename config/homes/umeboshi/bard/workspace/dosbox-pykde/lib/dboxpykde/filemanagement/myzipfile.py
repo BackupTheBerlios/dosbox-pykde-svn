@@ -26,7 +26,7 @@ class MyZipFile(ZipFile):
         if name is None:
             namelist = self.namelist()
             total = len(namelist)
-            count = 0
+            count = 1
             for filename in namelist:
                 if report is not None:
                     report(filename, count, total)
@@ -51,7 +51,9 @@ class MyZipFile(ZipFile):
         for root, dirs, files in os.walk('.', topdown=True):
             total += 1
             total += len(files)
-        count = 0
+        # the tolal seems to be one greater
+        total -= 1
+        count = 1
         for root, dirs, files in os.walk('.', topdown=True):
             for filename in files:
                 fullpath = os.path.join(root, filename)

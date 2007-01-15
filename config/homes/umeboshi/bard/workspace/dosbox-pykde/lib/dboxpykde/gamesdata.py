@@ -114,16 +114,6 @@ class WeblinkElement(BaseTextElement):
     def __init__(self, site, url):
         BaseTextElement.__init__(self, 'weblink', url, site=site)
         
-class InstalledFilesSectionElement(BaseElement):
-    def __init__(self):
-        BaseElement.__init__(self, 'installed_files')
-
-class InstalledFileElement(BaseElement):
-    def __init__(self, path, md5sum):
-        BaseElement.__init__(self, 'installed_file')
-        self.setAttribute('path', path)
-        self.setAttribute('md5sum', md5sum)
-        
 class GameElement(BaseElement):
     def __init__(self, gamedata):
         name = gamedata['name']
@@ -134,8 +124,6 @@ class GameElement(BaseElement):
         self.appendChild(DescriptionElement(gamedata['description']))
         weblink_section = WeblinkSectionElement()
         self.appendChild(weblink_section)
-        self.installedfiles = InstalledFilesSectionElement()
-        self.appendChild(self.installedfiles)
         # this if statement should be removed later
         # once it's determined to be unnecessary
         if gamedata.has_key('weblinks'):
@@ -143,15 +131,6 @@ class GameElement(BaseElement):
             for site in weblinks:
                 weblink_section.appendChild(WeblinkElement(site, weblinks[site]))
 
-    def add_installed_file(self, path, md5sum):
-        if_element = InstalledFileElement(path, md5sum)
-        self.installedfiles.appendChild(if_element)
-
-    def insert_installed_files(self, installed_files):
-        for path, md5sum in installed_files:
-            self.add_installed_file(path, md5sum)
-            
-        
 class GameElementParser(ParserHelper):
     def __init__(self, parsed_xml):
         self.game_element = self.get_single_element(parsed_xml, 'game')
@@ -172,12 +151,6 @@ class GameElementParser(ParserHelper):
             wl = WeblinkElement('', '')
             wl.reform(e)
             self.elements['weblinks'].append(wl)
-        self.elements['installed_files'] = []
-        for e in self.get_elements_from_section(element, 'installed_files', 'installed_file'):
-            path = e.getAttribute('path')
-            md5sum = e.getAttribute('md5sum')
-            if_element = InstalledFileElement(path, md5sum)
-            self.elements['installed_files'].append(e)
             
     def get_gamedata(self):
         gamedata = {}
@@ -191,14 +164,6 @@ class GameElementParser(ParserHelper):
             gamedata['weblinks'][site] = url
         return gamedata
 
-    def get_installed_files(self):
-        files = []
-        for element in self.elements['installed_files']:
-            path = element.getAttribute('path')
-            md5sum = element.getAttribute('md5sum')
-            files.append((path, md5sum))
-        return files
-    
 class GameDataHandler(object):
     def __init__(self, directories):
         self.directories = directories
@@ -207,9 +172,17 @@ class GameDataHandler(object):
     def _gamedatafilename(self, name):
         return os.path.join(self.gamedata_dir, '%s.xml' % name)
 
+    def _installedfilesname(self, name):
+        filename = '%s-md5sums.txt' % name
+        return os.path.join(self.gamedata_dir, filename)
+    
+
     def _write_xmlfile(self, element, filename):
         gamedatafile = file(filename, 'w')
-        element.writexml(gamedatafile)
+        #element.writexml(gamedatafile)
+        xmldata = element.toxml('utf-8')
+        gamedatafile.write(xmldata)
+        gamedatafile.close()
         
     def _update_xmlfile(self, gamedata, filename):
         parser = self._parse_gamedata_xmlfile(filename)
@@ -223,13 +196,22 @@ class GameDataHandler(object):
         return parser
     
     def add_new_game(self, gamedata, installed_files):
-        gamedatafilename = self._gamedatafilename(gamedata['name'])
+        name = gamedata['name']
+        gamedatafilename = self._gamedatafilename(name)
         if os.path.exists(gamedatafilename):
             raise ExistsError, "%s already exists. can't add as new." % gamedatafilename
         else:
             element = GameElement(gamedata)
-            element.insert_installed_files(installed_files)
             self._write_xmlfile(element, gamedatafilename)
+            self._add_md5sums_file(name, installed_files)
+            
+    def _add_md5sums_file(self, name, installed_files):
+        mdfilename = self._installedfilesname(name)
+        mdfile = file(mdfilename, 'w')
+        for filename, mdhash in installed_files:
+            mdfile.write('%s  %s\n' % (mdhash, filename))
+        mdfile.close()
+        
         
     def get_game_names(self):
         ls = os.listdir(self.gamedata_dir)
@@ -243,11 +225,6 @@ class GameDataHandler(object):
     def get_game_data(self, name):
         parser = self._parse_gamedata_file(name)
         return parser.get_gamedata()
-
-    def get_installed_files(self, name):
-        parser = self._parse_gamedata_file(name)
-        return parser.get_installed_files()
-    
 
     def update_game_data(self, gamedata):
         filename = self._gamedatafilename(gamedata['name'])
@@ -269,7 +246,20 @@ class GameDataHandler(object):
         title_pic_file = file(title_pic_filename, 'w')
         title_pic_file.write(picdata)
         title_pic_file.close()
-        
+
+    def _itemize_md5sum_line(self, line):
+        hashlen = 32
+        return (line[hashlen:].strip(), line[:hashlen])
+
+    def get_installed_files(self, name):
+        installed_files = []
+        mdfilename = self._installedfilesname(name)
+        for line in file(mdfilename):
+            if line:
+                filename, mdhash = self._itemize_md5sum_line(line)
+                installed_files.append((filename, mdhash))
+        return installed_files
+    
         
 if __name__ == '__main__':
     #xfile = file('amazon.xml')

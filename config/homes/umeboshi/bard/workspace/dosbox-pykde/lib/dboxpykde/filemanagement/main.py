@@ -294,3 +294,4 @@ class GameFilesHandler(object):
 if __name__ == '__main__':
     #af = archive_fresh_install
     #af(os.getcwd(), 'test')
+    pass
