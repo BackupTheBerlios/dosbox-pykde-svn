@@ -3,7 +3,57 @@ Dosbox-pykde_
 
 This is the homepage of dosbox-pykde_.  Not much here yet, just started writing the page.
 
+--------------------
+What is it?
+--------------------
 
+Dosbox-pykde is a frontend for dosbox_.  It is similar to other frontends for dosbox.  
+The major difference with this one, is that it is centered around file management.  
+This frontend is designed to separate the freshly installed files from the changed 
+file, configuration files, and saved games.  Every game entry in 
+the frontend is split between two different archives.  The first 
+archive is a zipfile created upon entry to the frontend.  This is 
+meant to save a fresh install.  The secondary, or extras archive, is 
+a tarball whose contents are generated from an rdiff-backup of the 
+leftover or changed files relative to the install archive.
+
+
+Although it is currently usable, it is still being considered in the planning stage until I work 
+out some of the features.  I may make it optional to tarball the secondary archive, and let the 
+user be able to just hold an rdiff-backup directory.  I may make rdiff-backup optional, and make 
+a cheap internal replacement for it.  I don't really have a frontend to handle configurations yet.  
+Currently, only one default configuration is supported, with per game overrides.  Autoexec lines in the configuration are not yet supported.
+
+-------------------
+
+
+Goals
+-------------------
+One of the goals of this project is to provide a good example application of PyKDE_.  I have 
+spent some extra time in writing comments throughout the code detailing some of PyKDE.  
+As of now, there are very few applications that use PyKDE primarily.  There are quite a few,
+not very many, but a few that use PyQt.  The PyKDE environment is much richer than the
+PyQt environment, and provides easier widgets to work with.  The sad fact is that there the 
+current state of documentation and examples are pretty poor, leaving developers to read 
+through the C++ documentation.  This is not always easy for a person who is primarily a 
+python user to do.  This program makes an attempt to ease entry into programming with 
+PyKDE.  I will make an attempt, where possible or applicable, to use PyKDE the way it 
+"should" be used.  I heartily welcome suggestions that help this.  
+
+I do believe in using pure python where it is more appropriate, and using the PyKDE/PyQt 
+widgets where they are best represented.  One of the strengths of Qt and even KDE in the 
+C++ environment is that they offer access to many things that are already handled by python.  
+For example, in Qt, there is a QString type that provides many methods for dealing with 
+strings.  In python, the string type already has methods for dealing with string objects, and a 
+python programmer would probably be more familiar with those.  So while knowing how to 
+use QString objects may really help the C++ programmer, they are more likely to just be in 
+the python programmer's way.  Other examples are the QMap and QList types, which are 
+handled by the dictionary and list objects in python.  Network functions and XML processing 
+are preferred to be handled by python in lieu of using the Qt equivalents.
+
+
+
+--------------------
 
 Dependencies
 --------------------
@@ -17,6 +67,8 @@ Dependencies
   - forgetHTML_ - A pythonic way of writing HTML documents.
 
   - rdiff-backup_ - Used for making incremental backups of saved games and configurations.
+
+  - dosbox_ - This is a frontend for dosbox.  The application has little value without this.
 
 - Dependencies that may be either removed or optional in the future:
 
@@ -55,7 +107,31 @@ Currently the best way to obtain dosbox-pykde is through subversion::
 
 svn_ access (This will work in konqueror.)
 
-------------------
+-----------------------
+
+Install
+-----------------------
+
+The python distutils are used to install this application.
+
+In the toplevel directory, type::
+
+       ./setup.py install
+
+or type::
+
+	python setup.py install
+
+To run from the source tree, type::
+
+   PYTHONPATH=`pwd`/lib ./dosbox-pykde
+
+
+
+and everything should install.
+
+
+-----------------------
 
 Documentation
 ---------------------
@@ -76,3 +152,4 @@ None yet.
 .. _tar: http://www.gnu.org/software/tar/
 .. _bzip2: http://www.bzip.org/
 .. _python: http://python.org
+.. _dosbox: http://dosbox.sourceforge.net/
