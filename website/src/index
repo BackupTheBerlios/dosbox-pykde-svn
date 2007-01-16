@@ -122,13 +122,14 @@ or type::
 
 	python setup.py install
 
+and everything should install.
+
 To run from the source tree, type::
 
    PYTHONPATH=`pwd`/lib ./dosbox-pykde
 
 
 
-and everything should install.
 
 
 -----------------------
