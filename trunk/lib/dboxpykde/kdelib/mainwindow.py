@@ -280,6 +280,16 @@ class MainWindow(MainWindowCommon, KMainWindow):
         dlg.setLabel('Adding %s to archive.' % filename)
         progress.setProgress(count)
         self.app.processEvents()
+
+    def _report_extract_from_installed_archive(self, filename, count, total):
+        dlg = self.extract_from_installed_archive_progress
+        progress = dlg.progressBar()
+        if dlg.total is None:
+            dlg.total = total
+            progress.setTotalSteps(total)
+        dlg.setLabel('Extracting %s from archive.' % filename)
+        progress.setProgress(count)
+        self.app.processEvents()
         
     def add_new_game(self):
         dlg = self.add_new_game_dlg
@@ -288,6 +298,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         fullpath = dlg.fullpath
         dlg.close()
         ### ugly section -- testing now -- cleanup later
+        self.app.processEvents()
         filehandler = self.app.game_fileshandler
         filehandler._report_add_to_installed_archive = self._report_add_to_installed_archive
         self._add_to_installed_archive_progress = BaseProgressDialog(self)

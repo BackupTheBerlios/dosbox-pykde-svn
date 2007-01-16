@@ -170,7 +170,7 @@ def copy_staging_tree_with_rsync(staging_path, install_path):
         staging_path = '%s/' % staging_path
     if not install_path.endswith('/'):
         install_path = '%s/' % install_path
-    cmd = 'rsync -a %s %s' % (staging_path, install_path)
+    cmd = 'rsync -a %s "%s"' % (staging_path, install_path)
     result = os.system(cmd)
     if result:
         raise OSError, 'problem with %s' % cmd
