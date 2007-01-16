@@ -295,11 +295,29 @@ ul.auto-toc {
 <p>This is the homepage of <a class="reference" href="http://dosbox-pykde.berlios.de">dosbox-pykde</a>.  Not much here yet, just started writing the page.</p>
 <div class="section">
 <h1><a id="dependencies" name="dependencies">Dependencies</a></h1>
-<p>forgetHTML</p>
-<p>PyKDE</p>
-<p>rdiff-backup</p>
-<p>rsync</p>
-<p>tar</p>
+<ul class="simple">
+<li>Main Dependencies:<ul>
+<li><a class="reference" href="http://python.org">Python</a> - The whole application is written in python.</li>
+<li><a class="reference" href="http://www.riverbankcomputing.co.uk/pykde/">PyKDE</a> - Python bindings for the KDE desktop environment.</li>
+<li><a class="reference" href="http://forgethtml.sourceforge.net/">forgetHTML</a> - A pythonic way of writing HTML documents.</li>
+<li><a class="reference" href="http://www.nongnu.org/rdiff-backup/">rdiff-backup</a> - Used for making incremental backups of saved games and configurations.</li>
+</ul>
+</li>
+<li>Dependencies that may be either removed or optional in the future:<ul>
+<li><a class="reference" href="http://samba.anu.edu.au/rsync/">rsync</a> - Used to copy the files from an rdiff-backup restoration to the dosbox directory.<ul>
+<li>This may be replaced later with shutil.copytree().</li>
+</ul>
+</li>
+<li><a class="reference" href="http://www.gnu.org/software/tar/">tar</a> - Used to archive the rdiff-backup repositories, I'm afraid to use zip for this.</li>
+<li><a class="reference" href="http://www.bzip.org/">bzip2</a> - Used with tar above to compress the rdiff-backup repositories.</li>
+</ul>
+</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section">
+<h1><a id="project" name="project">Project</a></h1>
+<p><a class="reference" href="http://developer.berlios.de/projects/dosbox-pykde">project</a> page</p>
 </div>
 <hr class="docutils" />
 <div class="section">
@@ -314,11 +332,6 @@ ul.auto-toc {
 svn checkout svn://svn.berlios.de/dosbox-pykde/trunk dosbox-pykde
 </pre>
 <p><a class="reference" href="svn://svn.berlios.de/dosbox-pykde">svn</a> access (This will work in konqueror.)</p>
-</div>
-<hr class="docutils" />
-<div class="section">
-<h1><a id="project" name="project">Project</a></h1>
-<p><a class="reference" href="http://developer.berlios.de/projects/dosbox-pykde">project</a> page</p>
 </div>
 <hr class="docutils" />
 <div class="section">

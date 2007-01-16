@@ -8,18 +8,35 @@ This is the homepage of dosbox-pykde_.  Not much here yet, just started writing 
 Dependencies
 --------------------
 
-forgetHTML
+- Main Dependencies:
 
-PyKDE
+  - Python_ - The whole application is written in python.
 
-rdiff-backup
+  - PyKDE_ - Python bindings for the KDE desktop environment.
 
-rsync
+  - forgetHTML_ - A pythonic way of writing HTML documents.
 
-tar
+  - rdiff-backup_ - Used for making incremental backups of saved games and configurations.
+
+- Dependencies that may be either removed or optional in the future:
+
+  - rsync_ - Used to copy the files from an rdiff-backup restoration to the dosbox directory.
+    
+    - This may be replaced later with shutil.copytree().
+
+  - tar_ - Used to archive the rdiff-backup repositories, I'm afraid to use zip for this.
+
+  - bzip2_ - Used with tar above to compress the rdiff-backup repositories.
 
 
 -----------------------------
+
+Project
+----------
+
+project_ page
+
+-----------------------
 
 Intended Audience/Users
 ----------------------------------
@@ -40,13 +57,6 @@ svn_ access (This will work in konqueror.)
 
 ------------------
 
-Project
-----------
-
-project_ page
-
------------------------
-
 Documentation
 ---------------------
 
@@ -59,3 +69,10 @@ None yet.
 .. _dosbox-pykde: http://dosbox-pykde.berlios.de
 .. _svn: svn://svn.berlios.de/dosbox-pykde
 .. _tarball: http://download.berlios.de/useless/useless_0.1.3.tar.gz
+.. _forgetHTML: http://forgethtml.sourceforge.net/
+.. _PyKDE: http://www.riverbankcomputing.co.uk/pykde/
+.. _rdiff-backup: http://www.nongnu.org/rdiff-backup/
+.. _rsync: http://samba.anu.edu.au/rsync/
+.. _tar: http://www.gnu.org/software/tar/
+.. _bzip2: http://www.bzip.org/
+.. _python: http://python.org
