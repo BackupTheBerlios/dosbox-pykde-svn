@@ -7,8 +7,8 @@ This is the homepage of dosbox-pykde_.  Not much here yet, just started writing 
 What is it?
 --------------------
 
-Dosbox-pykde is a frontend for dosbox_.  It is similar to other frontends for dosbox.  
-The major difference with this one, is that it is centered around file management.  
+Dosbox-pykde is a frontend for dosbox_ for the KDE_ desktop.  It is similar to other frontends 
+for dosbox.  The major difference with this one, is that it is centered around file management.  
 This frontend is designed to separate the freshly installed files from the changed 
 file, configuration files, and saved games.  Every game entry in 
 the frontend is split between two different archives.  The first 
@@ -153,3 +153,4 @@ None yet.
 .. _bzip2: http://www.bzip.org/
 .. _python: http://python.org
 .. _dosbox: http://dosbox.sourceforge.net/
+.. _KDE: http://www.kde.org/
