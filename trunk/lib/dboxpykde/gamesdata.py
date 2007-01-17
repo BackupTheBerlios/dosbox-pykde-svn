@@ -187,8 +187,8 @@ class GameDataHandler(object):
     def _update_xmlfile(self, gamedata, filename):
         parser = self._parse_gamedata_xmlfile(filename)
         element = GameElement(gamedata)
-        installed_files = parser.get_installed_files()
-        element.insert_installed_files(installed_files)
+        self._write_xmlfile(element, filename)
+        
         
     def _parse_gamedata_xmlfile(self, filename):
         parsed_element = parse_file(file(filename))
