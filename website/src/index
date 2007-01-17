@@ -55,6 +55,28 @@ are preferred to be handled by python in lieu of using the Qt equivalents.
 
 --------------------
 
+Features
+---------------
+
+- File management
+
+  - All new games added to the frontend are archived in a "fresh install" zip file.
+
+  - All new and changed files are archived with rdiff-backup into a separate "extras archive".
+
+- HTML presentation of information
+
+  - HTML description of game
+
+  - Screenshots - currently only displaying title screenshot
+
+  - Web/Documentation links
+
+- Game specific configuration
+
+
+-----------------
+
 Dependencies
 --------------------
 
@@ -89,6 +111,13 @@ Project
 project_ page
 
 -----------------------
+
+Related projects
+--------------------------
+
+DboxFE_ - This is a frontend using C++ Qt.  It has an advantage of being able to also run
+	in windows.
+
 
 Intended Audience/Users
 ----------------------------------
@@ -155,3 +184,6 @@ None yet.
 .. _python: http://python.org
 .. _dosbox: http://dosbox.sourceforge.net/
 .. _KDE: http://www.kde.org/
+.. _DboxFE: http://chmaster.freeforge.net/dboxfe-project.htm
+
+
