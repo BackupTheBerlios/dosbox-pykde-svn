@@ -25,11 +25,15 @@ from dboxpykde.config import config
 from dboxpykde.gamesdata import GameDataHandler
 from dboxpykde.filemanagement.main import GameFilesHandler
 from dboxpykde.dosbox import Dosbox
+from dboxpykde.kdelib.base import excepthook
+
 
 if __name__ == '__main__':
     aboutData = AboutData()
     # I don't understand this part
     KCmdLineArgs.init(sys.argv, aboutData)
+    sys.excepthook = excepthook
+    #raise StandardError, 'testing an error'
 
     # setup application
     app = MainApplication()

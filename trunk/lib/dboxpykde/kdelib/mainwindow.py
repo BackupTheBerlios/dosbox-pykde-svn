@@ -38,6 +38,8 @@ from gamedata_widgets import AddNewGameDialog
 from gamedata_widgets import EditGameDataDialog
 
 from infobrowser import InfoBrowser
+from infobrowser import InfoPart
+
 from progress_dialogs import MultiGameProgressDialog
 # using BaseProgressDialog until a better class is made
 from progress_dialogs import BaseProgressDialog
@@ -67,12 +69,12 @@ class MainWindow(MainWindowCommon, KMainWindow):
                      SIGNAL('selectionChanged()'), self.selectionChanged)
         
         # place text browser in splitter
-        self.textView = InfoBrowser(self.splitView)
-        self.connect(self.textView, PYSIGNAL('GameInfoSet'), self.selectGame)
-
+        #self.textView = InfoBrowser(self.splitView)
         # i may eventually use the KHTMLPart instead
         # of the KTextBrowser
-        #self.textView = InfoPart(self.splitView)
+        self.textView = InfoPart(self.splitView)
+
+        self.connect(self.textView, PYSIGNAL('GameInfoSet'), self.selectGame)
 
         # set main widget
         self.setCentralWidget(self.splitView)

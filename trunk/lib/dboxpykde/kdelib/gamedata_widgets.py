@@ -1,5 +1,6 @@
 import os
 from qt import SIGNAL, SLOT
+from qt import PYSIGNAL
 from qt import QGridLayout
 from qt import QLabel
 from qt import QFrame
@@ -241,12 +242,11 @@ class EditGameDataDialog(BaseGameDataDialog):
         gamedata = self.get_gamedata_from_entries()
         self.handler.update_game_data(gamedata)
         KMessageBox.information(self, 'Data updated for %s' % gamedata['fullname'])
-        # this dialog is currently only called from the InfoBrowser
-        parent = self.parent()
-        if parent.name() == 'InfoBrowser':
-            # this refreshes the document in the InfoBrowser
-            parent.set_game_info(gamedata['name'])
-            
+        # we emit a GameDataUpdated signal passing the name of the game
+        # as a parameter so the infobrowser will update the display
+        self.emit(PYSIGNAL('GameDataUpdated'), (gamedata['name'], ))
+                    
+        #self.app.processEvents()
         
     
 
