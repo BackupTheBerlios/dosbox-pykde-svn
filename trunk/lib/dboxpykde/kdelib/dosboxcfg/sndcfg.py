@@ -107,9 +107,6 @@ class SoundConfigWidget(BaseDosboxConfigWidget):
         self.grid = QGridLayout(self, numrows, numcols,
                                 margin, space, 'SDLConfigWidgetLayout')
 
-        self.new_stuff()
-        
-    def new_stuff(self):
         # mixer group
         self.mixer_groupbox = VerticalGroupBox(self, 'Mixer Options')
         self.mixer_groupbox.setColumns(4)
@@ -173,13 +170,6 @@ class SoundConfigWidget(BaseDosboxConfigWidget):
         self.sblaster_oplopt_groupbox.setColumns(1)
         self.sblaster_oplopt_box = SoundBlasterOPLOptions(self.sblaster_oplopt_groupbox)
         
-        #self._default_oplmodes = ['auto', 'cms', 'opl2', 'dualopl2', 'opl3']
-        #self.sb_oplmode_box = ConfigComboBoxWidget(self.sblaster_groupbox,
-        #                                       'OPL mode', self._default_oplmodes)
-        #self.sb_oplrate_box = SampleRateOption(self.sblaster_groupbox,
-        #                                       'OPL sample rate')
-
-        
         # gus group
         self.gus_groupbox = VerticalGroupBox(self, 'Gravis Ultrasound Options')
         self.gus_groupbox.setColumns(5)
@@ -196,49 +186,4 @@ class SoundConfigWidget(BaseDosboxConfigWidget):
         self.gus_ultradir_box =  KURLRequester(self.gus_groupbox)
         self.gus_ultradir_box.setMode(KFile.Directory)
 
-        
-    def old_stuff(self):
-        # mixer group
-        self.mixer_groupbox = QGroupBox(self)
-        self.mixer_groupbox.setTitle('Mixer Options')
-        self.mixer_groupbox.setOrientation(self.mixer_groupbox.Vertical)
-        self.mixer_groupbox.setColumns(7)
-        self.grid.addWidget(self.mixer_groupbox, 0, 0)
-        self.nosound_check = QCheckBox(self.mixer_groupbox)
-        self.nosound_check.setText('Disable sound')
-        self.sample_rate_lbl = QLabel('Sample rate', self.mixer_groupbox)
-        self.sample_rate_box = KIntSpinBox(self.mixer_groupbox)
-        self.sample_rate_box.setSuffix('Hz')
-        # magic number for maximum sample rate
-        self.sample_rate_box.setMaxValue(44100)
-        self.blocksize_lbl = QLabel('Mixer block size', self.mixer_groupbox)
-        self.blocksize_box = KIntSpinBox(self.mixer_groupbox)
-        self.blocksize_box.setSuffix(' bytes')
-        # magic number for maximum block size
-        self.blocksize_box.setMaxValue(262144)
-        self.prebuffer_lbl = QLabel('Prebuffer', self.mixer_groupbox)
-        self.prebuffer_box = KIntSpinBox(self.mixer_groupbox)
-        self.prebuffer_box.setSuffix(' msec')
-        # magic number for maximum prebuffer (10 secs)
-        self.prebuffer_box.setMaxValue(10000)
-
-        # midi group
-        self.midi_groupbox = QGroupBox(self)
-        self.midi_groupbox.setTitle('Midi Options')
-        self.midi_groupbox.setOrientation(self.midi_groupbox.Vertical)
-        self.midi_groupbox.setColumns(6)
-        self.grid.addWidget(self.midi_groupbox, 0, 1)
-        self.mpu401_lbl = QLabel('mpu401 type', self.midi_groupbox)
-        self.mpu401_box = KComboBox(self.midi_groupbox)
-        self.mpu401_box.insertStrList(self._default_mpu401_types)
-        self.midi_device_lbl = QLabel('MIDI device', self.midi_groupbox)
-        self.midi_device_box = KComboBox(self.midi_groupbox)
-        self.midi_device_box.insertStrList(self._default_midi_devices)
-        self.midi_config_lbl = QLabel('MIDI config', self.midi_groupbox)
-        self.midi_config_box = KLineEdit(self.midi_groupbox)
-
-        # sblaster group
-        self.sblaster_groupbox = QGroupBox(self)
-        self.sblaster_groupbox.setTitle('SoundBlaster Options')
-        
         
