@@ -28,11 +28,14 @@ class SDLConfigWidget(BaseDosboxConfigWidget):
         numcols = 2
         margin = 0
         space = 1
-        self._default_resolutions = ['original', '640x480', '800x600', '1024x768']
-        self._default_outputs = ['surface', 'overlay', 'opengl', 'openglnb', 'ddraw']
-        self._default_priorities = ['lowest', 'lower', 'normal', 'higher', 'highest']
         self.grid = QGridLayout(self, numrows, numcols,
                                 margin, space, 'SDLConfigWidgetLayout')
+        self.config = self.app.config
+        res = self.config.get('dosbox_profiles', 'default_resolutions')
+        resolutions = [r.strip() for r in res.split(',')]
+        self._default_resolutions = ['original'] + resolutions
+        self._default_outputs = ['surface', 'overlay', 'opengl', 'openglnb', 'ddraw']
+        self._default_priorities = ['lowest', 'lower', 'normal', 'higher', 'highest']
         self.new_stuff()
         self.localconfig.add_section('sdl')
         

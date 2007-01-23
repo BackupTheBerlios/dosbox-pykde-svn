@@ -9,7 +9,7 @@ if not os.path.exists(main_config_dir):
 if not os.path.isdir(main_config_dir):
     raise StandardError, 'main_config_dir: %s is not a directory' % main_config_dir
 
-directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture'])
+directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture', 'profiles'])
 for dir_key in directories:
     path = os.path.join(main_config_dir, dir_key)
     directories[dir_key] = path
@@ -44,17 +44,25 @@ if __name__ == '__main__':
     app.game_fileshandler = GameFilesHandler(app.game_datahandler)
     app.dosbox = Dosbox(app)
 
-    from dboxpykde.kdelib.dosboxcfg.main import DosboxConfigTabWidget
-    from ConfigParser import ConfigParser
-    cfg = ConfigParser()
-    cfg.read('dosbox.conf.test')
-    win = DosboxConfigTabWidget(None)
-    win.showPage(win.sdltab)
-    win.set_config(cfg)
-    #win.showPage(win.machinetab)
-    #win.showPage(win.soundtab)
+    testit = 'cfg'
+    testit = 'manage profiles'
     
-    win.show()
+    if testit == 'cfg':
+        from dboxpykde.kdelib.dosboxcfg.main import DosboxConfigTabWidget
+        from ConfigParser import ConfigParser
+        cfg = ConfigParser()
+        cfg.read('dosbox.conf.test')
+        win = DosboxConfigTabWidget(None)
+        win.showPage(win.sdltab)
+        win.set_config(cfg)
+        #win.showPage(win.machinetab)
+        #win.showPage(win.soundtab)
+        win.show()
+    elif testit == 'manage profiles':
+        win = MainWindow(None)
+        win.show()
+        win.manageDosboxProfilesAction.activate()
+        
     # set main window in application
     app.setMainWidget(win)
     # run the application

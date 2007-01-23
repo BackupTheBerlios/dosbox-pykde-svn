@@ -121,3 +121,24 @@ class LaunchDosboxPrompt(BaseAction):
     def __init__(self, slot, parent):
         BaseAction.__init__(self, LaunchDosboxPromptData, 'LaunchDosboxPrompt',
                             slot, parent)
+
+class ManageDosboxProfiles(BaseAction):
+    def __init__(self, slot, parent):
+        itemdata = {}
+        itemdata['text'] = 'Manage dosbox profiles'
+        itemdata['icon'] = 'configure'
+        itemdata['ttip'] = 'Manage dosbox configurations'
+        itemdata['whatsit'] = itemdata['ttip']
+        BaseAction.__init__(self, itemdata, 'ManageDosboxProfiles',
+                            slot, parent)
+
+class SetCurrentProfile(BaseAction):
+    def __init__(self, slot, parent):
+        itemdata = {}
+        itemdata['text'] = 'Set current profile'
+        itemdata['icon'] = 'configure'
+        itemdata['ttip'] = 'Set current dosbox configuration profile'
+        itemdata['whatsit'] = itemdata['ttip']
+        BaseAction.__init__(self, itemdata, 'SetCurrentProfile',
+                            slot, parent)
+        

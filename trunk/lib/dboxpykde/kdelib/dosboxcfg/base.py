@@ -16,9 +16,12 @@ from kdeui import KLineEdit
 from kfile import KFile
 from kfile import KURLRequester
 
+from dboxpykde.kdelib.base import get_application_pointer
+
 class BaseDosboxConfigWidget(QWidget):
     def __init__(self, parent, name='BaseDosboxConfigWidget'):
         QWidget.__init__(self, parent, name)
+        self.app = get_application_pointer()
         self.tooltips = QToolTip
         self.mainconfig = None
         self.localconfig = ConfigParser()

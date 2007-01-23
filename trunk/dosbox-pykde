@@ -9,7 +9,7 @@ if not os.path.exists(main_config_dir):
 if not os.path.isdir(main_config_dir):
     raise StandardError, 'main_config_dir: %s is not a directory' % main_config_dir
 
-directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture'])
+directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture', 'profiles'])
 for dir_key in directories:
     path = os.path.join(main_config_dir, dir_key)
     directories[dir_key] = path

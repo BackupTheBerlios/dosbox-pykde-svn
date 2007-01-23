@@ -11,6 +11,7 @@ from kdeui import KListView, KListViewItem
 from kdeui import KMessageBox
 from kdeui import KStdAction
 from kdeui import KPopupMenu
+from kdeui import KStatusBar
 
 from kfile import KDirSelectDialog
 
@@ -32,6 +33,9 @@ from actions import ArchiveAllGames
 from actions import FilterAvailableGames
 from actions import FilterAllGames
 from actions import FilterUnavailableGames
+# profile actions
+from actions import ManageDosboxProfiles
+from actions import SetCurrentProfile
 
 # import game data dialogs
 from gamedata_widgets import AddNewGameDialog
@@ -45,6 +49,9 @@ from progress_dialogs import MultiGameProgressDialog
 from progress_dialogs import BaseProgressDialog
 
 from dboxpykde.common.mainwindow import MainWindowCommon
+
+from dosboxcfg.profile import ManageDosboxProfilesWindow
+from dosboxcfg.profile import ProfileSelectorDialog
 
 # main window class
 class MainWindow(MainWindowCommon, KMainWindow):
@@ -76,6 +83,8 @@ class MainWindow(MainWindowCommon, KMainWindow):
 
         self.connect(self.textView, PYSIGNAL('GameInfoSet'), self.selectGame)
 
+        self.statusbar = KStatusBar(self)
+        self._set_current_profile(self.app.dosbox.current_profile)
         # set main widget
         self.setCentralWidget(self.splitView)
 
@@ -84,7 +93,8 @@ class MainWindow(MainWindowCommon, KMainWindow):
         # information from dialogs
         self.new_game_dir_dialog = None
         self.add_new_game_dlg = None
-
+        self.set_profile_dlg = None
+        
         # here we add some methods to the dcop object
         self.app.dcop.addMethod('void selectGame (QString)',  self.selectGame)
         self.app.dcop.addMethod('void launchSelectedGame()', self.slotLaunchDosbox)
@@ -118,8 +128,13 @@ class MainWindow(MainWindowCommon, KMainWindow):
         self.filterUnavailableGamesAction = \
                                           FilterUnavailableGames(self.slotFilterUnavailableGames,
                                                                  collection)
+        self.manageDosboxProfilesAction = \
+                                        ManageDosboxProfiles(self.slotManageDosboxProfiles,
+                                                             collection)
         
-        
+        self.setCurrentProfileAction = \
+                                     SetCurrentProfile(self.slotSetCurrentProfile,
+                                                       collection)
     def initMenus(self):
         # make a new menu
         mainmenu = KPopupMenu(self)
@@ -134,6 +149,10 @@ class MainWindow(MainWindowCommon, KMainWindow):
         self.cleanAllGamesAction.plug(mainmenu)
         self.archiveAllGamesAction.plug(mainmenu)
         self.quitAction.plug(mainmenu)
+        # make a profiles menu
+        profilemenu = KPopupMenu(self)
+        self.manageDosboxProfilesAction.plug(profilemenu)
+        self.setCurrentProfileAction.plug(profilemenu)
         # make another menu for options
         optionmenu = KPopupMenu(self)
         self.flatViewAction.plug(optionmenu)
@@ -150,6 +169,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         menubar = self.menuBar()
         # place the menus on the menu bar (in order)
         menubar.insertItem('&Main', mainmenu)
+        menubar.insertItem('&Profiles', profilemenu)
         menubar.insertItem('&Options', optionmenu)
         menubar.insertItem('&Help', self.helpMenu(''))
 
@@ -161,6 +181,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         self.newGameAction.plug(toolbar)
         self.launchDosboxAction.plug(toolbar)
         self.launchDosboxPromptAction.plug(toolbar)
+        self.manageDosboxProfilesAction.plug(toolbar)
         self.quitAction.plug(toolbar)
         
     def refreshListView(self):
@@ -239,6 +260,18 @@ class MainWindow(MainWindowCommon, KMainWindow):
     def slotLaunchDosboxPrompt(self, game=None):
         self._launchdosbox_common(game, launch_game=False)
 
+    def slotManageDosboxProfiles(self):
+        #from dosboxcfg.profile import ProfileDialogWindow
+        #win = ProfileDialogWindow(self)
+        win = ManageDosboxProfilesWindow(self)
+        win.show()
+
+    def slotSetCurrentProfile(self):
+        dlg = ProfileSelectorDialog(self)
+        self.connect(dlg, SIGNAL('okClicked()'), self._current_profile_selected)
+        self.set_profile_dlg = dlg
+        dlg.show()
+        
     def _launchdosbox_common(self, game, launch_game=True):
         if game is None:
             game = self.listView.currentItem().game
@@ -251,6 +284,19 @@ class MainWindow(MainWindowCommon, KMainWindow):
             title = self.game_titles[game]
             KMessageBox.error(self, '%s is unavailable' % title)
 
+    def _current_profile_selected(self):
+        dlg = self.set_profile_dlg
+        if dlg is not None:
+            profile = dlg.get_selected_profile()
+            self._set_current_profile(profile)
+            self.set_profile_dlg = None
+            
+    def _set_current_profile(self, profile):
+        dosbox = self.app.dosbox
+        dosbox.set_current_profile(profile)
+        msg = 'Current Profile:  %s' % dosbox.current_profile
+        self.statusbar.message(msg)        
+            
     def new_game_path_selected(self):
         # url is a KURL
         url = self.new_game_dir_dialog.url()
@@ -345,7 +391,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
             real_action(game)
             index += 1
         dlg.close()
-        
+
         
 if __name__ == '__main__':
     print "testing module"

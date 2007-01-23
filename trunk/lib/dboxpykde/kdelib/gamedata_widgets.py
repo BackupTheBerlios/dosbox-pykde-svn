@@ -16,6 +16,8 @@ from kdeui import KDialogBase
 
 from kfile import KFileDialog
 
+from dboxpykde.kdelib.base import BaseDialogWindow
+
 opendlg_errormsg = 'There is already a dialog box open.  Close it or restart the program'
 
 class BaseGameDataFrame(QFrame):
@@ -159,17 +161,15 @@ class BaseGameDataFrame(QFrame):
 
         
 
-class BaseGameDataDialog(KDialogBase):
+class BaseGameDataDialog(BaseDialogWindow):
     def __init__(self, parent, name='BaseGameDataDialog'):
-        KDialogBase.__init__(self, parent, name)
-        # setup app pointer
-        self.app = KApplication.kApplication()
-        self.config = self.app.config
+        BaseDialogWindow.__init__(self, parent, name=name)
         # we need a frame for the layout widget
         # the layout widget won't work with a window as parent
         self.frame = BaseGameDataFrame(self)
         # set frame as main widget
         self.setMainWidget(self.frame)
+        self.resize(*self.config.get_xy('gamedata_dialog', 'dialog_size'))
 
 
     def _fill_layout(self, gamedata):

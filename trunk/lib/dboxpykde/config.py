@@ -66,6 +66,10 @@ name_title_view:  title
 
 [gamedata_dialog]
 dialog_size:   400, 300
+
+[dosbox_profiles]
+default_resolutions:    640x480,800x600,1024x768,1280x768
+
 """ 
 # need to fix main_config_dir to be os-independent
 main_config_dir = os.path.expanduser('~/.dosbox-pykde')
@@ -162,9 +166,8 @@ memsize = 16
 language = 
 captures = capture
 
-[autoexec]
-
 """
+
 
 dbox_configfilename = 'dosbox.conf.default'
 local_config = os.path.join(main_config_dir, dbox_configfilename)

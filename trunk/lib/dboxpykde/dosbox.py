@@ -19,9 +19,18 @@ class Dosbox(object):
     def __init__(self, app):
         self.app = app
         self.main_config_dir = self.app.main_config_dir
+        self.profiles_dir = os.path.join(self.main_config_dir, 'profiles')
         self.default_config = os.path.join(self.main_config_dir, 'dosbox.conf.default')
         self.tmp_parent_path = self.app.config.get('DEFAULT', 'tmp_parent_path')
         self._dosbox_binary = self.app.config.get('DEFAULT', 'dosbox_binary')
+        self.current_profile = None
+        profiles = self.get_profile_list()
+        if not profiles or 'default' not in profiles:
+            print 'creating default profile'
+            cfg = self.get_default_config()
+            self.save_profile('default', cfg)
+        self.set_current_profile('default')
+        
         
     def get_capture_path(self, name):
         return os.path.join(self.main_config_dir, 'capture', name)
@@ -37,12 +46,48 @@ class Dosbox(object):
     def _game_specific_configfilename(self, name):
         return os.path.join(self.main_config_dir, 'configs', '%s.dosboxrc' % name)
     
-    
+    def _get_profile_configfilename(self, profile):
+        return os.path.join(self.main_config_dir, 'profiles', '%s.dosbox.conf' % profile)
+
+    def get_profile_list(self):
+        files = os.listdir(self.profiles_dir)
+        profiles = []
+        for filename in files:
+            suffix = '.dosbox.conf'
+            if filename.endswith(suffix):
+                profile = filename[: - len(suffix)]
+                profiles.append(profile)
+        return profiles
+
+    def get_default_config(self):
+        config = ConfigParser()
+        config.read([self.default_config])
+        return config
+
+    def save_profile(self, profilename, configobj):
+        filename = self._get_profile_configfilename(profilename)
+        profile = file(filename, 'w')
+        configobj.write(profile)
+        profile.close()
+
+    def load_profile(self, profile):
+        filename = self._get_profile_configfilename(profile)
+        cfg = ConfigParser()
+        cfg.read([filename])
+        return cfg
+
+    def set_current_profile(self, profile):
+        #cfg = self.load_profile(profile)
+        self.current_profile = profile
+        
     def generate_configuration(self, name):
         config = DosboxConfig()
         # order is default then game-specific
         # game-specific overrides default
-        cfiles = [self.default_config, self._game_specific_configfilename(name)]
+        cfiles = [self.default_config]
+        if self.current_profile is not None:
+            cfiles.append(self._get_profile_configfilename(self.current_profile))
+        cfiles.append(self._game_specific_configfilename(name))
         config.read(cfiles)
         # setup capture directory
         path = self.get_capture_path(name)
