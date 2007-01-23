@@ -42,8 +42,10 @@ class BaseDialogWindow(KDialogBase):
     def __init__(self, parent, name='BaseDialogWindow'):
         KDialogBase.__init__(self, parent, name)
         self.app = get_application_pointer()
-
+        self.myconfig = self.app.myconfig
+        
 class BaseMainWindow(KMainWindow):
     def __init__(self, parent, name='BaseMainWindow'):
         KMainWindow.__init__(self, parent, name)
         self.app = get_application_pointer()
+        self.myconfig = self.app.myconfig
