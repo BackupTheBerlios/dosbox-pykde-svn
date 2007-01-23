@@ -147,6 +147,7 @@ class ArchiveHelper(object):
 
     def archive_rdiff_backup_repos(self, name, path):
         archivename = self.determine_extras_archivename(name)
+        config = self.app.myconfig
         if not config.getboolean('DEFAULT', 'overwrite_extras_archives'):
             oldarchive = self.determine_old_archivename(archivename)
             if os.path.exists(archivename):
