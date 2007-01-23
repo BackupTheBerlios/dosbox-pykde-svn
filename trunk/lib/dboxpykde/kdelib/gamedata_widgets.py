@@ -41,7 +41,7 @@ class BaseGameDataFrame(QFrame):
         self.weblink_dict = {}
         # setup app pointer
         self.app = KApplication.kApplication()
-        self.config = self.app.config
+        self.myconfig = self.app.myconfig
         # setup dialog pointers
         self.select_launch_command_dlg = None
         # Setup widgets
@@ -169,7 +169,7 @@ class BaseGameDataDialog(BaseDialogWindow):
         self.frame = BaseGameDataFrame(self)
         # set frame as main widget
         self.setMainWidget(self.frame)
-        self.resize(*self.config.get_xy('gamedata_dialog', 'dialog_size'))
+        self.resize(*self.myconfig.get_xy('gamedata_dialog', 'dialog_size'))
 
 
     def _fill_layout(self, gamedata):
@@ -216,7 +216,7 @@ class AddNewGameDialog(BaseGameDataDialog):
         fullname = shortname.capitalize()
         launchcmd = '%s.exe' % shortname
         description = ''
-        main_dosboxpath = self.config.get('DEFAULT', 'main_dosbox_path')
+        main_dosboxpath = self.myconfig.get('DEFAULT', 'main_dosbox_path')
         if not self.fullpath.startswith(main_dosboxpath):
             raise ValueError, '%s is not contained in %s' % (self.fullpath, main_dosboxpath)
         dosboxpath = self.fullpath.split(main_dosboxpath)[1]

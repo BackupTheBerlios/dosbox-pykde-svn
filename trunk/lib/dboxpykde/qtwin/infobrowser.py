@@ -65,7 +65,7 @@ class InfoBrowser(QTextBrowser):
             # get gamedata from doc object
             # to keep from excessive xml parsing
             gamedata = self.doc.gamedata
-            cmd = self.app.config.get('DEFAULT', 'launch_weblink')
+            cmd = self.app.myconfig.get('DEFAULT', 'launch_weblink')
             # for these url's, the name is the site
             weblink_url = gamedata['weblinks'][name]
             if '%s' in cmd:

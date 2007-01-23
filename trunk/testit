@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     # setup application
     app = MainApplication()
-    app.config = config
+    app.myconfig = config
     app.main_config_dir = main_config_dir
     app.main_dosbox_path = config.get('DEFAULT', 'main_dosbox_path')
     app.game_datahandler = GameDataHandler(directories)

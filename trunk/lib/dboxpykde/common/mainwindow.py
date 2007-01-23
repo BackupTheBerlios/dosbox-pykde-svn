@@ -5,15 +5,15 @@ import os
 class MainWindowCommon(object):
     # call this after self.app has been setup
     def _init_common(self):
-        self.config = self.app.config
-        self.resize(*self.config.get_xy('mainwindow', 'mainwindow_size'))
+        self.myconfig = self.app.myconfig
+        self.resize(*self.myconfig.get_xy('mainwindow', 'mainwindow_size'))
         # initialize game data
         self.initialize_important_game_data()
         self._treedict = {}
         self._show_filter = 'all'
         # setup default view options
-        self.flat_tree_view = self.config.get('mainwindow', 'flat_tree_view')
-        self.name_title_view = self.config.get('mainwindow', 'name_title_view')
+        self.flat_tree_view = self.myconfig.get('mainwindow', 'flat_tree_view')
+        self.name_title_view = self.myconfig.get('mainwindow', 'name_title_view')
 
         # init actions menus toolbar
         self.initActions()

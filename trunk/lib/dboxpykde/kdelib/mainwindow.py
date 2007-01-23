@@ -69,7 +69,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         self.initlistView()
         # try to resize splitter
         # this is a kind of ugly hack, but seems to work ok
-        x, y = self.config.get_xy('mainwindow', 'mainwindow_size')
+        x, y = self.myconfig.get_xy('mainwindow', 'mainwindow_size')
         self.splitView.setSizes([int(.1*x), int(.9*x)])
         # setup signals
         self.connect(self.listView,
@@ -244,7 +244,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
             
     def slotNewGame(self):
         if self.new_game_dir_dialog is None:
-            main_dosbox_path = self.config.get('DEFAULT', 'main_dosbox_path')
+            main_dosbox_path = self.myconfig.get('DEFAULT', 'main_dosbox_path')
             dlg = KDirSelectDialog(main_dosbox_path, 0, self)
             dlg.connect(dlg, SIGNAL('okClicked()'), self.new_game_path_selected)
             dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_new_game_dir_dlg)

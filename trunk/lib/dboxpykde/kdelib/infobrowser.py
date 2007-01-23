@@ -50,7 +50,7 @@ class InfoBrowserCommon(object):
             # get gamedata from doc object
             # to keep from excessive xml parsing
             gamedata = self.doc.gamedata
-            cmd = self.app.config.get('DEFAULT', 'launch_weblink')
+            cmd = self.app.myconfig.get('DEFAULT', 'launch_weblink')
             # for these url's, the name is the site
             weblink_url = gamedata['weblinks'][name]
             if '%s' in cmd:
@@ -114,6 +114,10 @@ class InfoPart(KHTMLPart, InfoBrowserCommon):
         # is derived from QObject and not QWidget
         self._widget = QWidget(None, 'dialog_parent')
         self.dialog_parent = self._widget
+        # start a blank page
+        self.begin()
+        self.write('')
+        self.end()
         
     def set_game_info(self, name):
         self.begin()
@@ -230,7 +234,7 @@ class InfoBrowserOrig(KTextBrowser):
             # get gamedata from doc object
             # to keep from excessive xml parsing
             gamedata = self.doc.gamedata
-            cmd = self.app.config.get('DEFAULT', 'launch_weblink')
+            cmd = self.app.myconfig.get('DEFAULT', 'launch_weblink')
             # for these url's, the name is the site
             weblink_url = gamedata['weblinks'][name]
             if '%s' in cmd:

@@ -58,8 +58,8 @@ class MainWindow(MainWindowCommon, QMainWindow):
         QMainWindow.__init__(self, parent, 'PyQt Dosbox Frontend')
         # setup app pointer
         self.app = qApp
-        self.config = self.app.config
-        self.resize(*self.config.get_xy('mainwindow', 'mainwindow_size'))
+        self.myconfig = self.app.myconfig
+        self.resize(*self.myconfig.get_xy('mainwindow', 'mainwindow_size'))
         # initialize game data
 
         self.initActions()

@@ -21,8 +21,8 @@ class Dosbox(object):
         self.main_config_dir = self.app.main_config_dir
         self.profiles_dir = os.path.join(self.main_config_dir, 'profiles')
         self.default_config = os.path.join(self.main_config_dir, 'dosbox.conf.default')
-        self.tmp_parent_path = self.app.config.get('DEFAULT', 'tmp_parent_path')
-        self._dosbox_binary = self.app.config.get('DEFAULT', 'dosbox_binary')
+        self.tmp_parent_path = self.app.myconfig.get('DEFAULT', 'tmp_parent_path')
+        self._dosbox_binary = self.app.myconfig.get('DEFAULT', 'dosbox_binary')
         self.current_profile = None
         profiles = self.get_profile_list()
         if not profiles or 'default' not in profiles:
@@ -113,8 +113,8 @@ class Dosbox(object):
     def _get_args(self, name, launch_game=True, use_config=True):
         handler = self.app.game_datahandler
         gamedata = handler.get_game_data(name)
-        main_dosbox_path = self.app.config.get('DEFAULT', 'main_dosbox_path')
-        cdrive_is_main_dosbox_path = self.app.config.getboolean('DEFAULT',
+        main_dosbox_path = self.app.myconfig.get('DEFAULT', 'main_dosbox_path')
+        cdrive_is_main_dosbox_path = self.app.myconfig.getboolean('DEFAULT',
                                                          'cdrive_is_main_dosbox_path')
         dosboxpath = gamedata['dosboxpath']
         launchcmd = gamedata['launchcmd']
