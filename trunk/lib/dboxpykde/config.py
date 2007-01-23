@@ -182,7 +182,7 @@ def generate_default_config(path):
 def generate_default_dosbox_config(path):
     if not os.path.exists(path):
         cfile = file(path, 'w')
-        cfile.write(default_config)
+        cfile.write(default_dbox_config)
         cfile.close()
 
 if __name__ == '__main__':
