@@ -71,14 +71,6 @@ dialog_size:   400, 300
 default_resolutions:    640x480,800x600,1024x768,1280x768
 
 """ 
-# need to fix main_config_dir to be os-independent
-main_config_dir = os.path.expanduser('~/.dosbox-pykde')
-
-configfilename = os.path.join(main_config_dir, 'dosbox-pykde.conf')
-if not os.path.exists(configfilename):
-    configfile = file(configfilename, 'w')
-    configfile.write(default_config)
-    configfile.close()
 
 default_dbox_config = """
 [ipx]
@@ -169,17 +161,9 @@ captures = capture
 """
 
 
-dbox_configfilename = 'dosbox.conf.default'
-local_config = os.path.join(main_config_dir, dbox_configfilename)
-if not os.path.exists(local_config):
-    local_configfile = file(local_config, 'w')
-    local_configfile.write(default_dbox_config)
-    local_configfile.close()
-        
 class MyConfig(ConfigParser):
     def __init__(self):
         ConfigParser.__init__(self)
-        self.configfilename = configfilename
         
     def get_xy(self, section, option):
         strvalue = self.get(section, option)
@@ -189,10 +173,17 @@ class MyConfig(ConfigParser):
     def reload_config(self):
         self.read([self.configfilename])
         
-# setup ConfigParser
-config = MyConfig()
-configfiles = [configfilename, 'local-dosbox-pykde.conf']
-config.read(configfiles)
+def generate_default_config(path):
+    if not os.path.exists(path):
+        cfile = file(path, 'w')
+        cfile.write(default_config)
+        cfile.close()
+
+def generate_default_dosbox_config(path):
+    if not os.path.exists(path):
+        cfile = file(path, 'w')
+        cfile.write(default_config)
+        cfile.close()
 
 if __name__ == '__main__':
     print 'testing config module'

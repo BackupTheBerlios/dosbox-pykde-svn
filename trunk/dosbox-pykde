@@ -6,7 +6,6 @@ from kdecore import KCmdLineArgs
 from dboxpykde.kdelib.application import MainApplication, AboutData
 from dboxpykde.kdelib.mainwindow import MainWindow
 
-from dboxpykde.config import config
 from dboxpykde.gamesdata import GameDataHandler
 from dboxpykde.filemanagement.main import GameFilesHandler
 from dboxpykde.dosbox import Dosbox
@@ -22,12 +21,6 @@ if __name__ == '__main__':
 
     # setup application
     app = MainApplication()
-    app.myconfig = config
-    app.main_config_dir = app.datadir
-    app.main_dosbox_path = config.get('DEFAULT', 'main_dosbox_path')
-    app.game_datahandler = GameDataHandler(app.data_directories)
-    app.game_fileshandler = GameFilesHandler(app.game_datahandler)
-    app.dosbox = Dosbox(app)
     
     # setup dcop and register the application
     dcop = app.dcopClient()

@@ -165,9 +165,10 @@ class GameElementParser(ParserHelper):
         return gamedata
 
 class GameDataHandler(object):
-    def __init__(self, directories):
-        self.directories = directories
-        self.gamedata_dir = directories['games']
+    def __init__(self, app):
+        self.app = app
+        self.directories = self.app.data_directories
+        self.gamedata_dir = self.directories['games']
 
     def _gamedatafilename(self, name):
         return os.path.join(self.gamedata_dir, '%s.xml' % name)
