@@ -24,7 +24,6 @@ class Dosbox(object):
         self.tmp_parent_path = os.path.join(self.app.tmpdir, 'dosbox-area')
         if not os.path.isdir(self.tmp_parent_path):
             makepaths(self.tmp_parent_path)
-        #self.tmp_parent_path = self.app.myconfig.get('DEFAULT', 'tmp_parent_path')
         self._dosbox_binary = self.app.myconfig.get('DEFAULT', 'dosbox_binary')
         self.current_profile = None
         profiles = self.get_profile_list()

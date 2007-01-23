@@ -49,9 +49,24 @@ class MainApplication(KApplication):
         # place dcop object here
         self.dcop = DosboxHandler()
         self._std_dirs = KStandardDirs()
-        self.tmpdir = str(self._std_dirs.findResourceDir('tmp', '/'))
-        self.datadir = str(self._std_dirs.findResourceDir('data', '/'))
+        self.tmpdir_parent = str(self._std_dirs.findResourceDir('tmp', '/'))
+        self.datadir_parent = str(self._std_dirs.findResourceDir('data', '/'))
+        self.tmpdir = os.path.join(self.tmpdir_parent, 'dosbox-pykde')
+        self.datadir = os.path.join(self.datadir_parent, 'dosbox-pykde')
+        if not os.path.exists(self.datadir):
+            os.mkdir(self.datadir)
+        self._generate_data_directories()
         
+    def _generate_data_directories(self):
+        directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture', 'profiles'])
+        for dir_key in directories:
+            path = os.path.join(self.datadir, dir_key)
+            directories[dir_key] = path
+            if not os.path.exists(path):
+                os.mkdir(path)
+        self.data_directories = directories
+        
+
     def quit(self):
         KApplication.quit(self)
 

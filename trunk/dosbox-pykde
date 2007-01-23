@@ -1,21 +1,6 @@
 #!/usr/bin/python
 import os, sys
 
-# setup configuration area before loading anything else
-main_config_dir = os.path.expanduser('~/.dosbox-pykde')
-if not os.path.exists(main_config_dir):
-    os.mkdir(main_config_dir)
-
-if not os.path.isdir(main_config_dir):
-    raise StandardError, 'main_config_dir: %s is not a directory' % main_config_dir
-
-directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture', 'profiles'])
-for dir_key in directories:
-    path = os.path.join(main_config_dir, dir_key)
-    directories[dir_key] = path
-    if not os.path.exists(path):
-        os.mkdir(path)
-
 from kdecore import KCmdLineArgs
 
 from dboxpykde.kdelib.application import MainApplication, AboutData
@@ -38,9 +23,9 @@ if __name__ == '__main__':
     # setup application
     app = MainApplication()
     app.myconfig = config
-    app.main_config_dir = main_config_dir
+    app.main_config_dir = app.datadir
     app.main_dosbox_path = config.get('DEFAULT', 'main_dosbox_path')
-    app.game_datahandler = GameDataHandler(directories)
+    app.game_datahandler = GameDataHandler(app.data_directories)
     app.game_fileshandler = GameFilesHandler(app.game_datahandler)
     app.dosbox = Dosbox(app)
     
