@@ -3,7 +3,7 @@ from qt import SIGNAL, SLOT
 
 from kdecore import KAboutData
 from kdecore import KApplication
-
+from kdecore import KStandardDirs
 
 from kdeui import KAboutDialog
 
@@ -47,8 +47,11 @@ class MainApplication(KApplication):
         # in case something needs done before quitting
         self.connect(self, SIGNAL('aboutToQuit()'), self.quit)
         # place dcop object here
-        self.dcop = DosboxHandler()      
-
+        self.dcop = DosboxHandler()
+        self._std_dirs = KStandardDirs()
+        self.tmpdir = str(self._std_dirs.findResourceDir('tmp', '/'))
+        self.datadir = str(self._std_dirs.findResourceDir('data', '/'))
+        
     def quit(self):
         KApplication.quit(self)
 
