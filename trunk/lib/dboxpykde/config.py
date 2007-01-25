@@ -170,6 +170,10 @@ class MyConfig(ConfigParser):
         x, y = [int(v.strip()) for v in strvalue.split(',')]
         return x, y
 
+    def get_list(self, section, option, sep=','):
+        value = self.get(section, option)
+        return [v.strip() for v in value.split(sep)]
+    
     def reload_config(self):
         self.read([self.configfilename])
         

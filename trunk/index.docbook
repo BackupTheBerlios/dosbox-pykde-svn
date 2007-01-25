@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.2-Based Variant V1.1//EN" "dtd/kdex.dtd"[
+<!ENTITY myapplication "<application>dosbox-pykde</application>">
+<!ENTITY % English "INCLUDE">
+
+]>
+<book lang="&language;">
+
+<bookinfo>
+<title>Dosbox-PyKDE Users Guide</title>
+<authorgroup>
+<author>
+<personname>
+<firstname>Joseph</firstname>
+<surname>Rawson</surname>
+<email>umeboshi@gregscomputerservice.com</email>
+</personname>
+</author>
+</authorgroup>
+<copyright>
+<year>2007</year>
+<holder>Public Domain</holder>
+</copyright>
+<abstract>
+<para>
+&myapplication; is a frontend to the Dosbox emulator.</para>
+</abstract>
+<keywordset>
+<keyword>KDE</keyword>
+<keyword>dosbox</keyword>
+<keyword>PyKDE</keyword>
+<keyword>pykde</keyword>
+<keyword>dosbox-pykde</keyword>
+</keywordset>
+
+</bookinfo>
+<chapter id="introduction">
+<title>Introduction</title>
+<para>
+This is an introductory paragraph.  This paragraph needs to be replaced.
+</para>
+</chapter>
+<chapter id="features">
+<title>Features</title>
+<para>
+<itemizedlist>
+<listitem>File Management
+<itemizedlist>
+<listitem>All new games added to the frontend are archived in  a 
+"fresh install" zip file.
+</listitem>
+<listitem>All new and changed files are archived with rdiff-backup into a separate
+"extras archive".
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem>HTML presentation of information
+<itemizedlist>
+<listitem>HTML description of game
+</listitem>
+<listitem>Screenshots - currently only displaying title screenshot
+</listitem>
+<listitem>Web/Documentation links
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem>Dosbox configuration
+<itemizedlist>
+<listitem>Manage different dosbox configurations with profiles.
+</listitem>
+<listitem>Game specific configurations are available to override profiles.
+</listitem>
+</itemizedlist>
+</listitem>
+</itemizedlist>
+</para>
+</chapter>
+</book>
