@@ -155,7 +155,7 @@ class GusHardwareOptions(QWidget):
 class SoundConfigWidget(BaseDosboxConfigWidget):
     def __init__(self, parent, name='SDLConfigWidget'):
         BaseDosboxConfigWidget.__init__(self, parent, name=name)
-        numrows = 4
+        numrows = 2
         numcols = 3
         margin = 10
         space = 7
@@ -190,7 +190,7 @@ class SoundConfigWidget(BaseDosboxConfigWidget):
         # midi group
         self.midi_groupbox = VerticalGroupBox(self, 'MIDI Options')
         self.midi_groupbox.setColumns(4)
-        self.grid.addWidget(self.midi_groupbox, 0, 1)
+        self.grid.addWidget(self.midi_groupbox, 1, 1)
         self.mpu401_box = ConfigComboBoxWidget(self.midi_groupbox,
                                                'mpu401 type', self._default_mpu401_types)
         self.midi_device_box = ConfigComboBoxWidget(self.midi_groupbox,
@@ -200,7 +200,7 @@ class SoundConfigWidget(BaseDosboxConfigWidget):
         
         # speaker group
         self.speaker_groupbox = VerticalGroupBox(self, 'PC Speaker Options')
-        self.speaker_groupbox.setColumns(2)
+        self.speaker_groupbox.setColumns(5)
         self.grid.addMultiCellWidget(self.speaker_groupbox, 1, 1, 0, 0)
         self.enable_speaker_check = QCheckBox(self.speaker_groupbox)
         self.enable_speaker_check.setText('Enable PC speaker emulation')
@@ -217,7 +217,8 @@ class SoundConfigWidget(BaseDosboxConfigWidget):
         # sblaster group
         self.sblaster_groupbox = VerticalGroupBox(self, 'SoundBlaster Options')
         self.sblaster_groupbox.setColumns(2)
-        self.grid.addWidget(self.sblaster_groupbox, 2, 0)
+        #self.grid.addWidget(self.sblaster_groupbox, 0, 0)
+        self.grid.addMultiCellWidget(self.sblaster_groupbox, 0, 0, 0, 1)
         self.sbtype_box = ConfigComboBoxWidget(self.sblaster_groupbox,
                                                'SoundBlaster type', self._default_sbtypes)
         self.sblaster_hwopt_groupbox = VerticalGroupBox(self.sblaster_groupbox,
@@ -236,7 +237,7 @@ class SoundConfigWidget(BaseDosboxConfigWidget):
         self.gus_groupbox = VerticalGroupBox(self, 'Gravis Ultrasound Options')
         self.gus_groupbox.setColumns(5)
         #self.grid.addWidget(self.gus_groupbox, 2, 1)
-        self.grid.addMultiCellWidget(self.gus_groupbox, 1, 2, 1, 1)
+        self.grid.addMultiCellWidget(self.gus_groupbox, 0, 1, 2, 2)
         self.enable_gus_check = QCheckBox(self.gus_groupbox)
         self.enable_gus_check.setText('Enable Gravis Ultrasound emulation')
         self.gus_hwopt_groupbox = VerticalGroupBox(self.gus_groupbox,

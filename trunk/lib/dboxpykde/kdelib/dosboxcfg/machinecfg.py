@@ -32,7 +32,7 @@ class MachineConfigWidget(BaseDosboxConfigWidget):
     def __init__(self, parent, name='SDLConfigWidget'):
         BaseDosboxConfigWidget.__init__(self, parent, name=name)
         numrows = 2
-        numcols = 2
+        numcols = 3
         margin = 10
         space = 7
         self._default_machines = ['vga', 'cga', 'tandy', 'pcjr', 'hercules']
@@ -88,7 +88,7 @@ class MachineConfigWidget(BaseDosboxConfigWidget):
             
         # dos group
         self.dos_groupbox = VerticalGroupBox(self, 'Dos Options')
-        self.dos_groupbox.setColumns(2)
+        self.dos_groupbox.setColumns(3)
         self.grid.addWidget(self.dos_groupbox, 1, 1)
         self.xms_check = QCheckBox(self.dos_groupbox)
         self.xms_check.setText('Enable XMS support')
@@ -99,9 +99,9 @@ class MachineConfigWidget(BaseDosboxConfigWidget):
 
         # peripheral options
         self.peripheral_groupbox = VerticalGroupBox(self, 'Peripheral Options')
-        self.peripheral_groupbox.setColumns(2)
-        self.grid.addWidget(self.peripheral_groupbox, 2, 0)
-        #self.grid.addMultiCellWidget(self.peripheral_groupbox, 2, 2, 0, 1)
+        self.peripheral_groupbox.setColumns(1)
+        #self.grid.addWidget(self.peripheral_groupbox, 2, 0)
+        self.grid.addMultiCellWidget(self.peripheral_groupbox, 2, 2, 0, 2)
         # peripherals in bios section
         self.bios_groupbox = VerticalGroupBox(self.peripheral_groupbox, 'Bios Options')
         self.bios_groupbox.setColumns(1)
@@ -122,7 +122,7 @@ class MachineConfigWidget(BaseDosboxConfigWidget):
         # ipx options
         self.ipx_groupbox = VerticalGroupBox(self, 'IPX Options')
         self.ipx_groupbox.setColumns(1)
-        self.grid.addWidget(self.ipx_groupbox, 2, 1)
+        self.grid.addWidget(self.ipx_groupbox, 1, 2)
         self.ipx_check = QCheckBox(self.ipx_groupbox)
         self.ipx_check.setText('Enable ipx over UDP/IP emulation')
         
