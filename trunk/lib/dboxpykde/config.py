@@ -11,16 +11,22 @@ default_config = """
 [DEFAULT]
 __main_path:                %s """ % os.path.expanduser('~/')[:-1]
 default_config +="""
+
+# These are the commands used for file management.
+[filemanagement]
+# Currently rdiff-backup and rsync are required.
+use_rdiff_backup:  True
+# if use_rdiff_backup is True, we restore to a staging
+# area and rsync it into the install path.  This is only needed
+# when rdiff-backup is used.
+use_rsync:  True
+
 __archive_parent_path:      %(__main_path)s/archives
 # path to the archives of freshly installed games
 installed_archives_path:	%(__archive_parent_path)s/dosbox-installed
 # path to the extras archives (backups of savegames and configs)
 extras_archives_path:	%(__archive_parent_path)s/dosbox-extras
-# the parent path for temporary manipulation
-# of extras archives contents
-tmp_parent_path:		/tmp/dosbox-area
-# the parent path to the installed dosbox games
-main_dosbox_path:	         %(__main_path)s/dosbox
+
 # option to keep from overwriting extras archives
 # this should normally be set to true, as by default
 # all extras archives are rdiff-backup trees
@@ -28,9 +34,21 @@ main_dosbox_path:	         %(__main_path)s/dosbox
 # rdiff-backup.  Set this to False to keep all
 # backups of the extras archives
 overwrite_extras_archives:	True
+
+[dosbox]
+# the parent path to the installed dosbox games
+main_dosbox_path:	         %(__main_path)s/dosbox
 # the path to the dosbox binary
 # if already in the path, the default should be fine
 dosbox_binary:              dosbox
+
+# whether the main_dosbox_path is mounted as c:
+# or the full path to the game is mounted ad c:
+# If this is set to True, all intermediate directory
+# names need to be <= 8 chars.
+cdrive_is_main_dosbox_path:    False
+
+[externalactions]
 # command to launch external weblinks
 # The default command talks to a running konqueror process
 # and exits quickly, leaving konqueror to do the work
@@ -41,22 +59,6 @@ dosbox_binary:              dosbox
 launch_weblink:   kfmclient newTab "%s"
 #text editor command
 text_editor:      kate
-# whether the main_dosbox_path is mounted as c:
-# or the full path to the game is mounted ad c:
-# If this is set to True, all intermediate directory
-# names need to be <= 8 chars.
-cdrive_is_main_dosbox_path:    False
-
-# These are the commands used for file management.
-# pass
-[filemanagement]
-# Currently rdiff-backup and rsync are required.
-use_rdiff_backup:  True
-# if use_rdiff_backup is True, we restore to a staging
-# area and rsync it into the install path.  This is only needed
-# when rdiff-backup is used.
-use_rsync:  True
-
 
 [mainwindow]
 mainwindow_size:  400, 600

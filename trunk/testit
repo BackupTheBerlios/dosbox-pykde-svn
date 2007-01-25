@@ -23,6 +23,7 @@ if __name__ == '__main__':
     app = MainApplication()
     testit = 'cfg'
     testit = 'manage profiles'
+    testit = 'settings'
     
     if testit == 'cfg':
         from dboxpykde.kdelib.dosboxcfg.main import DosboxConfigTabWidget
@@ -39,6 +40,10 @@ if __name__ == '__main__':
         win = MainWindow(None)
         win.show()
         win.manageDosboxProfilesAction.activate()
+    elif testit == 'settings':
+        win = MainWindow(None)
+        win.show()
+        win.configureDosboxPyKDEAction.activate()
         
     # set main window in application
     app.setMainWidget(win)

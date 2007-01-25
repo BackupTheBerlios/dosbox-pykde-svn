@@ -70,6 +70,8 @@ class MainWindowCommon(object):
         
     def refreshListView_common(self, itemclass):
         self.listView.clear()
+        coltitle = '%s games' % self._show_filter.capitalize()
+        self.listView.setColumnText(0, coltitle)
         # the tree view option may get too long
         # with a large number of games.  I have tried
         # to make this fairly quick for a small number of
@@ -217,15 +219,18 @@ class MainWindowCommon(object):
     def slotPrepareAllGames(self):
         missing = self._unavailable_games()
         self._prepare_games(missing)
-
+        self.refreshListView()
+        
     def slotCleanAllGames(self):
         available = self._available_games()
         self._clean_games(available)
-
+        self.refreshListView()
+        
     def slotArchiveAllGames(self):
         available = self._available_games()
         self._clean_games(available)
         self._prepare_games(available)
+        self.refreshListView()
 
     def slotFilterAllGames(self):
         self._show_filter = 'all'

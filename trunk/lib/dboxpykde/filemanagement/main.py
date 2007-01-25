@@ -138,7 +138,7 @@ class ArchiveHelper(object):
     def perform_rdiff_backup(self, path, backup_path):
         if not os.path.isdir(backup_path):
             raise ExistsError, "backup path %s doesn't exist" % backup_path
-        cmd = 'rdiff-backup -v0 %s %s' % (path, backup_path)
+        cmd = 'rdiff-backup -v0 "%s" %s' % (path, backup_path)
         result = os.system(cmd)
         if result:
             raise OSError, "problem with perform_rdiff_backup %s" % cmd
@@ -148,7 +148,7 @@ class ArchiveHelper(object):
     def archive_rdiff_backup_repos(self, name, path):
         archivename = self.determine_extras_archivename(name)
         config = self.app.myconfig
-        if not config.getboolean('DEFAULT', 'overwrite_extras_archives'):
+        if not config.getboolean('filemanagement', 'overwrite_extras_archives'):
             oldarchive = self.determine_old_archivename(archivename)
             if os.path.exists(archivename):
                 os.rename(archivename, oldarchive)

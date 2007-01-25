@@ -56,7 +56,7 @@ class MyKConfig(KSimpleConfig):
             print section, self.options(section)
         #print self.get('mainwindow', 'flat_tree_view')
         #print self.get('filemanagement', 'use_rsync')
-        #print self.get('DEFAULT', 'main_dosbox_path')
+        #print self.get('dosbox', 'main_dosbox_path')
   
     def sections(self):
         return [str(section) for section in self.groupList()]

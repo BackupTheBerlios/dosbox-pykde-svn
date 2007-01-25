@@ -21,7 +21,11 @@ from dboxpykde.base import ExistsError
 
 
 # import actions
-from actions import NewGenre, NewGame, LaunchDosbox
+from actions import NewGame
+from actions import ImportZipFile
+
+# launch dosbox actions
+from actions import LaunchDosbox
 from actions import LaunchDosboxPrompt
 # view actions
 from actions import NameView, TitleView
@@ -36,6 +40,9 @@ from actions import FilterUnavailableGames
 # profile actions
 from actions import ManageDosboxProfiles
 from actions import SetCurrentProfile
+# settings actions
+from actions import ConfigureDosboxPyKDE
+
 
 # import game data dialogs
 from gamedata_widgets import AddNewGameDialog
@@ -43,6 +50,9 @@ from gamedata_widgets import EditGameDataDialog
 
 from infobrowser import InfoBrowser
 from infobrowser import InfoPart
+
+# import settings widget
+from config import SettingsWidgetDialog
 
 from progress_dialogs import MultiGameProgressDialog
 # using BaseProgressDialog until a better class is made
@@ -105,6 +115,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         collection = self.actionCollection()
         self.quitAction = KStdAction.quit(self.close, collection)
         self.newGameAction = NewGame(self.slotNewGame, collection)
+        self.importZipFileAction = ImportZipFile(self.slotImportZipFile, collection)
         self.launchDosboxAction = \
                                 LaunchDosbox(self.slotLaunchDosbox, collection)
         self.launchDosboxPromptAction = \
@@ -135,11 +146,19 @@ class MainWindow(MainWindowCommon, KMainWindow):
         self.setCurrentProfileAction = \
                                      SetCurrentProfile(self.slotSetCurrentProfile,
                                                        collection)
+        self.configureDosboxPyKDEAction = \
+                                        ConfigureDosboxPyKDE(self.slotConfigureDosboxPyKDE,
+                                                             collection)
+        
     def initMenus(self):
         # make a new menu
         mainmenu = KPopupMenu(self)
-        # plug main actions into the menu
+        # plug import new game actions into the menu
         self.newGameAction.plug(mainmenu)
+        self.importZipFileAction.plug(mainmenu)
+        # insert a little line separating menu items
+        mainmenu.insertSeparator()
+        # plug launch dosbox actions into the menu
         self.launchDosboxAction.plug(mainmenu)
         self.launchDosboxPromptAction.plug(mainmenu)
         # insert a little line separating menu items
@@ -154,15 +173,18 @@ class MainWindow(MainWindowCommon, KMainWindow):
         self.manageDosboxProfilesAction.plug(profilemenu)
         self.setCurrentProfileAction.plug(profilemenu)
         # make another menu for options
-        optionmenu = KPopupMenu(self)
-        self.flatViewAction.plug(optionmenu)
-        self.treeViewAction.plug(optionmenu)
-        self.nameViewAction.plug(optionmenu)
-        self.titleViewAction.plug(optionmenu)
-        optionmenu.insertSeparator()
-        self.filterAllGamesAction.plug(optionmenu)
-        self.filterAvailableGamesAction.plug(optionmenu)
-        self.filterUnavailableGamesAction.plug(optionmenu)
+        viewmenu = KPopupMenu(self)
+        self.flatViewAction.plug(viewmenu)
+        self.treeViewAction.plug(viewmenu)
+        self.nameViewAction.plug(viewmenu)
+        self.titleViewAction.plug(viewmenu)
+        viewmenu.insertSeparator()
+        self.filterAllGamesAction.plug(viewmenu)
+        self.filterAvailableGamesAction.plug(viewmenu)
+        self.filterUnavailableGamesAction.plug(viewmenu)
+        # make a settings menu
+        settingsmenu = KPopupMenu(self)
+        self.configureDosboxPyKDEAction.plug(settingsmenu)
         # get a pointer to the menubar in the main window
         # this method will create a menubar if one is not already
         # available
@@ -170,7 +192,8 @@ class MainWindow(MainWindowCommon, KMainWindow):
         # place the menus on the menu bar (in order)
         menubar.insertItem('&Main', mainmenu)
         menubar.insertItem('&Profiles', profilemenu)
-        menubar.insertItem('&Options', optionmenu)
+        menubar.insertItem('&View', viewmenu)
+        menubar.insertItem('&Settings', settingsmenu)
         menubar.insertItem('&Help', self.helpMenu(''))
 
     def initToolbar(self):
@@ -179,6 +202,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         toolbar = self.toolBar()
         # add some actions to the toolbar
         self.newGameAction.plug(toolbar)
+        self.importZipFileAction.plug(toolbar)
         self.launchDosboxAction.plug(toolbar)
         self.launchDosboxPromptAction.plug(toolbar)
         self.manageDosboxProfilesAction.plug(toolbar)
@@ -244,7 +268,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
             
     def slotNewGame(self):
         if self.new_game_dir_dialog is None:
-            main_dosbox_path = self.myconfig.get('DEFAULT', 'main_dosbox_path')
+            main_dosbox_path = self.myconfig.get('dosbox', 'main_dosbox_path')
             dlg = KDirSelectDialog(main_dosbox_path, 0, self)
             dlg.connect(dlg, SIGNAL('okClicked()'), self.new_game_path_selected)
             dlg.connect(dlg, SIGNAL('cancelClicked()'), self.destroy_new_game_dir_dlg)
@@ -270,6 +294,14 @@ class MainWindow(MainWindowCommon, KMainWindow):
         dlg = ProfileSelectorDialog(self)
         self.connect(dlg, SIGNAL('okClicked()'), self._current_profile_selected)
         self.set_profile_dlg = dlg
+        dlg.show()
+
+    def slotImportZipFile(self):
+        KMessageBox.information(self, 'Import a new game')
+
+    def slotConfigureDosboxPyKDE(self):
+        #KMessageBox.information(self, 'ConfigureDosboxPyKDE')
+        dlg = SettingsWidgetDialog(self)
         dlg.show()
         
     def _launchdosbox_common(self, game, launch_game=True):

@@ -122,6 +122,10 @@ class LaunchDosboxPrompt(BaseAction):
         BaseAction.__init__(self, LaunchDosboxPromptData, 'LaunchDosboxPrompt',
                             slot, parent)
 
+############
+# these actions need to go to common area eventually
+############
+
 class ManageDosboxProfiles(BaseAction):
     def __init__(self, slot, parent):
         itemdata = {}
@@ -142,3 +146,23 @@ class SetCurrentProfile(BaseAction):
         BaseAction.__init__(self, itemdata, 'SetCurrentProfile',
                             slot, parent)
         
+class ImportZipFile(BaseAction):
+    def __init__(self, slot, parent):
+        itemdata = {}
+        itemdata['text'] = 'Import zip file'
+        itemdata['icon'] = 'tar'
+        itemdata['ttip'] = 'Import a zip file into the dosbox area as a new game'
+        itemdata['whatsit'] = itemdata['ttip']
+        BaseAction.__init__(self, itemdata, 'ImportZipFile',
+                            slot, parent)
+        
+class ConfigureDosboxPyKDE(BaseAction):
+    def __init__(self, slot, parent):
+        itemdata = {}
+        itemdata['text'] = 'Configure dosbox-pykde'
+        itemdata['icon'] = 'configure'
+        itemdata['ttip'] = 'Configure settings for dosbox-pykde'
+        itemdata['whatsit'] = itemdata['ttip']
+        BaseAction.__init__(self, itemdata, 'ConfigureDosboxPyKDE',
+                            slot, parent)
+    

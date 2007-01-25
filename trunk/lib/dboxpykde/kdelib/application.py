@@ -71,7 +71,16 @@ class MainApplication(KApplication):
         self.game_datahandler = GameDataHandler(self)
         self.game_fileshandler = GameFilesHandler(self)
         self.dosbox = Dosbox(self)
-        
+
+    def make_new_datahandler(self):
+        return GameDataHandler(self)
+
+    def make_new_fileshandler(self):
+        return GameFilesHandler(self)
+
+    def make_new_dosbox_object(self):
+        return Dosbox(self)
+    
 
     def _setup_standard_directories(self):
         self._std_dirs = KStandardDirs()
@@ -95,12 +104,12 @@ class MainApplication(KApplication):
 
     def _generate_archive_directories(self):
         cfg = self.myconfig
-        installed_archives_path = cfg.get('DEFAULT', 'installed_archives_path')
-        extras_archives_path = cfg.get('DEFAULT', 'extras_archives_path')
+        installed_archives_path = cfg.get('filemanagement', 'installed_archives_path')
+        extras_archives_path = cfg.get('filemanagement', 'extras_archives_path')
         makepaths(installed_archives_path, extras_archives_path)
         self.installed_archives_path = installed_archives_path
         self.extras_archives_path = extras_archives_path
-        self.main_dosbox_path = cfg.get('DEFAULT', 'main_dosbox_path')
+        self.main_dosbox_path = cfg.get('dosbox', 'main_dosbox_path')
 
     def quit(self):
         KApplication.quit(self)

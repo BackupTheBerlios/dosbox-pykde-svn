@@ -9,7 +9,6 @@ from dboxpykde.kdelib.base import BaseDialogWindow
 from dboxpykde.kdelib.base import BaseMainWindow
 from dboxpykde.kdelib.base import BaseEntryDialog
 from dboxpykde.kdelib.base import get_application_pointer
-from dboxpykde.dosbox import Dosbox
 
 from cfgmain import DosboxConfigTabWidget
 
@@ -24,7 +23,7 @@ class NameProfileDialog(BaseEntryDialog):
 class ProfileSelectorDialog(BaseDialogWindow):
     def __init__(self, parent, name='ProfileSelectorDialog'):
         BaseDialogWindow.__init__(self, parent, name=name)
-        self.dbox = Dosbox(self.app)
+        self.dbox = self.app.make_new_dosbox_object()
         profiles = self.dbox.get_profile_list()
         self.listView = KListView(self)
         self.listView.addColumn('profile')
@@ -43,7 +42,7 @@ class ProfileManagerWidget(QSplitter):
         self.app = get_application_pointer()
         #self.listView = KListView(self)
         self.cfgView = DosboxConfigTabWidget(self)
-        self.dbox = Dosbox(self.app)
+        self.dbox = self.app.make_new_dosbox_object()
 
         #self.initlistView()
         cfg = self.dbox.get_default_config()
@@ -85,7 +84,7 @@ class ManageDosboxProfilesWindow(BaseMainWindow):
         self.setCaption('Manage Dosbox Profiles')
         self.statusbar = self.statusBar()
         self.statusbar.message('No Profile loaded')
-        self.dbox = Dosbox(self.app)
+        self.dbox = self.app.make_new_dosbox_object()
         # pointers
         self.current_profile = None
         self._name_profile_dialog = None

@@ -215,7 +215,7 @@ class AddNewGameDialog(BaseGameDataDialog):
         fullname = shortname.capitalize()
         launchcmd = '%s.exe' % shortname
         description = ''
-        main_dosboxpath = self.myconfig.get('DEFAULT', 'main_dosbox_path')
+        main_dosboxpath = self.myconfig.get('dosbox', 'main_dosbox_path')
         if not self.fullpath.startswith(main_dosboxpath):
             raise ValueError, '%s is not contained in %s' % (self.fullpath, main_dosboxpath)
         dosboxpath = self.fullpath.split(main_dosboxpath)[1]
