@@ -45,32 +45,32 @@ This is an introductory paragraph.  This paragraph needs to be replaced.
 <para>
 <itemizedlist>
 <listitem>File Management
-<itemizedlist>
-<listitem>All new games added to the frontend are archived in  a 
-"fresh install" zip file.
-</listitem>
-<listitem>All new and changed files are archived with rdiff-backup into a separate
-"extras archive".
-</listitem>
-</itemizedlist>
+	<itemizedlist>
+	<listitem>All new games added to the frontend are archived in  a 
+	"fresh install" zip file.
+	</listitem>
+	<listitem>All new and changed files are archived with rdiff-backup into a separate
+	"extras archive".
+	</listitem>
+	</itemizedlist>
 </listitem>
 <listitem>HTML presentation of information
-<itemizedlist>
-<listitem>HTML description of game
-</listitem>
-<listitem>Screenshots - currently only displaying title screenshot
-</listitem>
-<listitem>Web/Documentation links
-</listitem>
-</itemizedlist>
+	<itemizedlist>
+	<listitem>HTML description of game
+	</listitem>
+	<listitem>Screenshots - currently only displaying title screenshot
+	</listitem>
+	<listitem>Web/Documentation links
+	</listitem>
+	</itemizedlist>
 </listitem>
 <listitem>Dosbox configuration
-<itemizedlist>
-<listitem>Manage different dosbox configurations with profiles.
-</listitem>
-<listitem>Game specific configurations are available to override profiles.
-</listitem>
-</itemizedlist>
+	<itemizedlist>
+	<listitem>Manage different dosbox configurations with profiles.
+	</listitem>
+	<listitem>Game specific configurations are available to override profiles.
+	</listitem>
+	</itemizedlist>
 </listitem>
 </itemizedlist>
 </para>
@@ -108,7 +108,7 @@ Before using &myapplication;, some explanation of the expected layout of the fil
 <para>
 Above the games are zork 1,2 and 3.  In &myapplication;, all of the games are referenced by a unique name (no spaces), and have a relative path from the main dosbox directory attached to them called "dosbox path".  So in the above layout, the game Zork 1 would have a name zork1 and the dosbox path would be "adventure/text/infocom/zork1".  The name of the game is the last directory in the dosbox path.  This "feature" may be changed one day, if I feel that it is too confusing or otherwise difficult to work with.  For now, this is just how things work in &myapplication;.
 
-The Zork games make a good example to work with, as they are freely available online.  You may find them <ulink url="http://www.csd.uwo.ca/Infocom/">here</ulink>
+The Zork games make a good example to work with, as they are freely available online.  You may find them <ulink url="http://www.csd.uwo.ca/Infocom/">here</ulink>.  Please download the DOS versions.
 
 </para>
 <para>

@@ -52,7 +52,7 @@ from infobrowser import InfoBrowser
 from infobrowser import InfoPart
 
 # import settings widget
-from config import SettingsWidgetDialog
+from settings import SettingsWidgetDialog
 
 from progress_dialogs import MultiGameProgressDialog
 # using BaseProgressDialog until a better class is made
