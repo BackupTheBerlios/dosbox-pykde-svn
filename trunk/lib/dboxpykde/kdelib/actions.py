@@ -166,3 +166,14 @@ class ConfigureDosboxPyKDE(BaseAction):
         BaseAction.__init__(self, itemdata, 'ConfigureDosboxPyKDE',
                             slot, parent)
     
+class EditGameData(BaseAction):
+    def __init__(self, slot, parent):
+        itemdata = {}
+        itemdata['text'] = "Edit this game's data"
+        itemdata['icon'] = 'edit'
+        itemdata['ttip'] = "Edit this game's data"
+        itemdata['whatsit'] = itemdata['ttip']
+        BaseAction.__init__(self, itemdata, 'EditGameData',
+                            slot, parent)
+    
+    

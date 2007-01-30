@@ -195,16 +195,6 @@ class MainWindowCommon(object):
         fhandler = self.app.game_fileshandler
         return [g for g in self.game_names if not fhandler.game_is_available(g)]
     
-    def _prepare_games_orig(self, gamelist):
-        fhandler = self.app.game_fileshandler
-        for game in gamelist:
-            fhandler.prepare_game(game)
-
-    def _clean_games_orig(self, gamelist):
-        fhandler = self.app.game_fileshandler
-        for game in gamelist:
-            fhandler.cleanup_game(game)
-
     def _clean_games(self, gamelist):
         self._perform_multigame_action(gamelist, 'cleanup_game')
         

@@ -60,18 +60,28 @@ class MainApplication(KApplication):
         self.dcop = DosboxHandler()
         self._setup_standard_directories()
         self._generate_data_directories()
-        mainconfigfilename = os.path.join(self.datadir, 'dosbox-pykde.conf')
+        self.mainconfigfilename = os.path.join(self.datadir, 'dosbox-pykde.conf')
         default_dbox_cfilename = os.path.join(self.datadir, 'dosbox.conf.default')
-        generate_default_config(mainconfigfilename)
+        generate_default_config(self.mainconfigfilename)
         generate_default_dosbox_config(default_dbox_cfilename)
-        self.myconfig = MyConfig()
-        self.myconfig.read([mainconfigfilename])
+        self.load_main_config()
         self._generate_archive_directories()
         # setup objects
         self.game_datahandler = GameDataHandler(self)
         self.game_fileshandler = GameFilesHandler(self)
         self.dosbox = Dosbox(self)
+    
 
+    def load_main_config(self):
+        self.myconfig = MyConfig()
+        self.myconfig.read([self.mainconfigfilename])
+        
+    def update_main_config(self, configobj):
+        cfile = file(self.mainconfigfilename, 'w')
+        configobj.write(cfile)
+        cfile.close()
+        self.load_main_config()
+        
     def make_new_datahandler(self):
         return GameDataHandler(self)
 

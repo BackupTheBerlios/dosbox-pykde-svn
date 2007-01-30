@@ -100,9 +100,26 @@ class ArchiveHelper(object):
         if remove:
             map(os.remove, unchanged_files)
         else:
-            print "remove is false, but still unhandled"        
+            for afile in unchanged_files:
+                dirname, basename = os.path.split(afile)
+                newdir = os.path.join(newpath, dirname)
+                makepaths(newdir)
+                newfile = os.path.join(newdir, basename)
+                os.rename(afile, newfile)
         os.chdir(here)
 
+    # rename the unchanged files that were moved back to their
+    # original place
+    def rename_unchanged_files_to_orig(self, path, unchanged_files):
+        _checkifdir(path)
+        here = os.getcwd()
+        newpath = '%s.tmp' % path
+        for afile in unchanged_files:
+            dirname, basename = os.path.split(afile)
+            newdir = os.path.join(newpath, dirname)
+            newfile = os.path.join(newdir, basename)
+            os.rename(newfile, afile)
+        
     # this function extracts the extras archive for a game to a temporary
     # path, then returns that path
     def extract_extras_archive(self, name, extract_cmd='tar xfj'):

@@ -65,6 +65,7 @@ mainwindow_size:  400, 600
 # default view types
 flat_tree_view:   flat
 name_title_view:  title
+use_khtml_part:   False
 
 [gamedata_dialog]
 dialog_size:   400, 300

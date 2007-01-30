@@ -89,8 +89,10 @@ class MainWindow(MainWindowCommon, KMainWindow):
         #self.textView = InfoBrowser(self.splitView)
         # i may eventually use the KHTMLPart instead
         # of the KTextBrowser
-        self.textView = InfoPart(self.splitView)
-
+        if self.app.myconfig.getboolean('mainwindow', 'use_khtml_part'):
+            self.textView = InfoPart(self.splitView)
+        else:
+            self.textView = InfoBrowser(self.splitView)
         self.connect(self.textView, PYSIGNAL('GameInfoSet'), self.selectGame)
 
         self.statusbar = KStatusBar(self)
@@ -297,7 +299,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         dlg.show()
 
     def slotImportZipFile(self):
-        KMessageBox.information(self, 'Import a new game')
+        KMessageBox.information(self, 'Import a new game, not yet implemented.')
 
     def slotConfigureDosboxPyKDE(self):
         #KMessageBox.information(self, 'ConfigureDosboxPyKDE')

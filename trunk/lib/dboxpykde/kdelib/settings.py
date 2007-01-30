@@ -1,3 +1,4 @@
+from qt import SIGNAL
 from qt import QCheckBox
 from qt import QGridLayout
 
@@ -148,13 +149,13 @@ class SettingsWidget(BaseConfigWidget):
         cfg.set(externalactions, 'text_editor', text_editor)
         # mainwindow section
         mainwindow_size = self.mainwindow_size_box.get_config_option()
-        cfg.set(mainwindow, 'mainwindow_size_', mainwindow_size)
+        cfg.set(mainwindow, 'mainwindow_size', mainwindow_size)
         flat_tree_view = self.flat_tree_box.get_config_option()
         cfg.set(mainwindow, 'flat_tree_view', flat_tree_view)
         name_title_view = self.name_title_box.get_config_option()
         cfg.set(mainwindow, 'name_title_view', name_title_view)
         return cfg
-    
+
 ########################
 # testing stuff here
 # class for testing config widgets
@@ -195,7 +196,8 @@ class SettingsTabWidget(KTabWidget):
     def get_config(self):
         cfg = self.settingstab.get_config()
         self.testtab.set_config(cfg)
-
+        return cfg
+    
     def set_config(self, configobj):
         self.settingstab.set_config(configobj)
         
@@ -210,7 +212,12 @@ class SettingsWidgetDialog(BaseDialogWindow):
         self.frame = SettingsTabWidget(self)
         self.setMainWidget(self.frame)
         self.frame.set_config(self.app.myconfig)
+        # connect buttons
+        self.connect(self, SIGNAL('okClicked()'), self.update_config)
+        self.connect(self, SIGNAL('applyClicked()'), self.update_config)
 
     def update_config(self):
         newcfg = self.frame.get_config()
-
+        self.app.update_main_config(newcfg)
+        
+        
