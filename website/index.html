@@ -353,6 +353,46 @@ are preferred to be handled by python in lieu of using the Qt equivalents.</p>
 </div>
 <hr class="docutils" />
 <div class="section">
+<h2><a id="a-short-history-and-rationale-about-file-management" name="a-short-history-and-rationale-about-file-management">A short history and rationale about file management</a></h2>
+<p>Probably the most feature of this frontend is its ability to manage archives.  Most emulator
+frontends have little need for this type of functionality, because they are mainly console,
+or arcade frontends.  These frontend usually work off of rom images or a zip file of rom images,
+and the configuration and savegame data is already separate from those images.  This is not
+the case with dosbox, or even other computer emulators.  With dosbox, the game files are
+generally stored in a single directory with the settings and saved games somewhere in that tree.</p>
+<p>When I first started using dosbox, I decided not to use a frontend at all.  What I did is make a
+&quot;c: drive&quot; out of a directory on my filesystem called &quot;dosbox&quot;.  I used an automenu program
+in the autoexec as my &quot;frontend&quot;.  This did a pretty good job, and it was comparable to how
+people used to run DOS on their computers.  For file management, I used to do an rdiff-backup
+over the whole dosbox tree regularly.  This method became somewhat cumbersome later on as
+I decided to add new games or remove old ones, or even rearrange the dosbox tree.</p>
+<p>These problems led me to create this frontend that manages the files on a &quot;per game&quot; basis.
+I decided to keep using rdiff-backup, because it is an good program, and an excellent way
+to keep track of previous saved games and changes in settings.  Currently, dosbox-pykde
+does most of what I want it to do with my files &quot;under the hood&quot; to my liking.</p>
+<p>Lately, I have been wondering what other users would like in a frontend, and whether they
+would like file management features at all.  I experimented with making file management
+optional, but ran across a few problems with it.  The main problem, if file management is made
+optional,  is that it is somewhat difficult to change your mind later and start trying to manage
+files after games have been added to the frontend.  Another problem is the amount of code to
+change to adapt to users who don't want dosbox-pykde to manage their files.  Due to this, I
+have decided to make file management a required feature.</p>
+<p>However, I have been trying to decide whether rdiff-backup, rsync, tar, and bzip2 should be
+required dependencies.  The main reason that they are required now, is that I don't want to
+reinvent the wheel to replace their functionality.  Most dosbox-pykde users should already have
+tar and bzip2 installed on their systems.  Most distributions have rsync, so it should be easy
+to install.  Rdiff-backup is also pretty well-known, and should be available on most distributions.</p>
+<p>I may soon make archiving the rdiff-backup repository optional, allowing the user to keep the
+rdiff-backup trees for the games in a directory.  This would remove the dependencies on tar and
+bzip2.  Rsync could be replaces with shutils.copytree from python, but I don't much like the
+copytree implementation.  The copytree implementation may not be a problem when dealing
+with &quot;dos&quot; files and directories, but I haven't tried testing it yet.  If these things are done, it
+would still leave rdiff-backup as a dependency.  There is no easy way to replace rdiff-backup.
+There could be an option for a &quot;flat&quot; backup of files that are not in the installed archive, but I
+haven't thought it through yet.</p>
+</div>
+<hr class="docutils" />
+<div class="section">
 <h2><a id="dependencies" name="dependencies">Dependencies</a></h2>
 <ul class="simple">
 <li>Main Dependencies:<ul>
