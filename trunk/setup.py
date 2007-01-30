@@ -33,7 +33,7 @@ scripts = ['dosbox-pykde']
 docs_directory = 'share/doc/dosbox-pykde'
 
 packages = ['dboxpykde']
-subpacks = ['common', 'filemanagement', 'kdelib', 'qtwin']
+subpacks = ['common', 'contrib', 'filemanagement', 'kdelib', 'qtwin']
 kdelib_subpacks = ['dosboxcfg']
 packages += ['dboxpykde.%s' % p for p in subpacks]
 #packages += ['konsultant.managers.%s' % p for p in managers]

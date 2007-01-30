@@ -1,11 +1,11 @@
 import os
 
-from forgetHTML import Inline
-from forgetHTML import SimpleDocument
-from forgetHTML import Anchor, Table
-from forgetHTML import TableRow, TableCell
-from forgetHTML import TableHeader, Header
-from forgetHTML import Image
+from dboxpykde.contrib.forgetHTML import Inline
+from dboxpykde.contrib.forgetHTML import SimpleDocument
+from dboxpykde.contrib.forgetHTML import Anchor, Table
+from dboxpykde.contrib.forgetHTML import TableRow, TableCell
+from dboxpykde.contrib.forgetHTML import TableHeader, Header
+from dboxpykde.contrib.forgetHTML import Image
 
 from base import make_url
 
