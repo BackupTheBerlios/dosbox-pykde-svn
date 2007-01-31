@@ -3,9 +3,6 @@ from qt import SIGNAL, SLOT
 from qt import PYSIGNAL
 from qt import QSplitter
 
-from kdecore import KApplication
-
-
 from kdeui import KMainWindow
 from kdeui import KListView, KListViewItem
 from kdeui import KMessageBox
@@ -63,12 +60,14 @@ from dboxpykde.common.mainwindow import MainWindowCommon
 from dosboxcfg.profile import ManageDosboxProfilesWindow
 from dosboxcfg.profile import ProfileSelectorDialog
 
+from base import get_application_pointer
+
 # main window class
 class MainWindow(MainWindowCommon, KMainWindow):
     def __init__(self, parent):
         KMainWindow.__init__(self, parent, 'PyKDE Dosbox Frontend')
         # setup app pointer
-        self.app = KApplication.kApplication()
+        self.app = get_application_pointer()
         self._init_common()
 
         # place a splitter in the window

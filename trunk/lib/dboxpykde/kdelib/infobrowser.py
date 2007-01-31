@@ -4,9 +4,6 @@ from qt import PYSIGNAL
 from qt import QString
 from qt import QWidget
 
-from kdecore import KApplication
-
-
 from kdeui import KTextBrowser
 from kdeui import KMessageBox
 
@@ -19,6 +16,7 @@ from dboxpykde.base import opendlg_errormsg
 from dboxpykde.base import ExistsError
 
 from base import BaseDialogWindow
+from base import get_application_pointer
 
 from dboxpykde.infodoc import MainGameInfoDocument
 
@@ -44,6 +42,9 @@ class AuditGameDialog(BaseDialogWindow):
         #self.grid.addWidget(self.progress, 1, 0)
         self.setMainWidget(self.frame)
         layout = self.layout()
+        # we use insertWidget instead of
+        # addWidget here so the widgets
+        # are above the dialog buttons
         # self frame should be at 0 index in the layout
         # we set the progress and label below this
         layout.insertWidget(1, self.progress)
@@ -83,7 +84,7 @@ class AuditGameDialog(BaseDialogWindow):
 class InfoBrowserCommon(object):
     def _init_common(self):
         # setup app pointer
-        self.app = KApplication.kApplication()
+        self.app = get_application_pointer()
         self.doc = MainGameInfoDocument(self.app)
         # setup dialog pointers
         self.select_title_screenshot_dlg = None

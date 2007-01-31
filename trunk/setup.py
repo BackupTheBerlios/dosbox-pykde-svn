@@ -13,14 +13,33 @@ from distutils.command.build import build as _build
 class clean(_clean):
     def run(self):
         _clean.run(self)
-        for root, dirs, files in os.walk(os.getcwd()):
+        here = os.getcwd()
+        for root, dirs, files in os.walk(here):
             for afile in files:
                 if afile.endswith('~'):
                     #print "removing backup file", os.path.join(root, afile)
                     os.remove(os.path.join(root, afile))
                 if afile.endswith('.pyc'):
                     os.remove(os.path.join(root, afile))
-                    
+        os.chdir('data/doc')
+        map(os.remove, glob.glob('*.html'))
+        os.chdir(here)
+        
+class build(_build):
+    def run(self):
+        _build.run(self)
+        here = os.getcwd()
+        os.chdir('data/doc')
+        print 'building documentation'
+        os.system('meinproc index.docbook')
+        os.chdir(here)
+        # remember that data_files and docs_directory_html are global here
+        # this needs to be done here for the html pages to be included in the
+        # data files, without statically listing them in the data_files definition
+        data_files.append((docs_directory_html, glob.glob('data/doc/*.html')))
+
+        
+
 version = '0'
 description = 'Dosbox frontend for KDE written in PyKDE'
 author = 'Joseph Rawson'
@@ -31,6 +50,7 @@ scripts = ['dosbox-pykde']
 
 # with the next lines we assume that this is being built with the --prefix /usr option
 docs_directory = 'share/doc/dosbox-pykde'
+docs_directory_html = os.path.join(docs_directory, 'html')
 
 packages = ['dboxpykde']
 subpacks = ['common', 'contrib', 'filemanagement', 'kdelib', 'qtwin']
@@ -56,7 +76,7 @@ setup(name='dosbox-pykde',
       package_dir=package_dir,
       scripts=scripts,
       data_files=data_files,
-      cmdclass=dict(clean=clean)
+      cmdclass=dict(clean=clean, build=build)
       )
 
       

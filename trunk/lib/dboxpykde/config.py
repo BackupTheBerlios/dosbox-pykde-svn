@@ -1,5 +1,6 @@
 import os, sys
 from ConfigParser import ConfigParser
+from StringIO import StringIO
 
 from base import ExistsError
 
@@ -196,6 +197,14 @@ def generate_default_dosbox_config(path):
         cfile = file(path, 'w')
         cfile.write(default_dbox_config)
         cfile.close()
+
+def generate_default_config_for_wizard():
+    cfile = StringIO()
+    cfile.write(default_config)
+    cfile.seek(0)
+    cfg = MyConfig()
+    cfg.readfp(cfile)
+    return cfg
 
 if __name__ == '__main__':
     print 'testing config module'
