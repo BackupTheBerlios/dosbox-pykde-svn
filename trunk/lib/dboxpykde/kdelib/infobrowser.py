@@ -18,15 +18,73 @@ from dboxpykde.base import split_url
 from dboxpykde.base import opendlg_errormsg
 from dboxpykde.base import ExistsError
 
-from dboxpykde.infodoc import BaseDocument
+from base import BaseDialogWindow
+
+from dboxpykde.infodoc import MainGameInfoDocument
 
 from gamedata_widgets import EditGameDataDialog
 
+
+# this ugly critter is a start of an audit game
+from qt import QLabel
+from kdeui import KProgress
+from dboxpykde.infodoc import AuditGameDocument
+
+class AuditGameDialog(BaseDialogWindow):
+    def __init__(self, parent, name='AuditGameDialog'):
+        BaseDialogWindow.__init__(self, parent, name=name)
+        #self.grid = QGridLayout(self, 2, 1, 5, 7)
+        self.frame = KTextBrowser(self)
+        self.frame.setNotifyClick(True)
+        self.frame.setSource = self.setSource
+        self.doc = AuditGameDocument(self.app)
+        #self.grid.addWidget(self.frame, 0, 0)
+        self.progress_label = QLabel(self)
+        self.progress = KProgress(self)
+        #self.grid.addWidget(self.progress, 1, 0)
+        self.setMainWidget(self.frame)
+        layout = self.layout()
+        # self frame should be at 0 index in the layout
+        # we set the progress and label below this
+        layout.insertWidget(1, self.progress)
+        # inserting into index 1 here knocks self.progress down to 2
+        layout.insertWidget(1, self.progress_label)
+        # disable and hide extra buttons
+        self.enableButtonApply(False)
+        self.showButtonApply(False)
+        self.enableButtonCancel(False)
+        self.showButtonCancel(False)
+        # the dialog should be a little taller than what
+        # it defaults to
+        self.resize(0, 300)
+        
+    def report_md5check(self, filename, count):
+        self.progress_label.setText('checking %s' % filename)
+        self.progress.setProgress(count)
+        self.app.processEvents()
+    
+    def audit_game(self, name, from_install=True, time='now'):
+        filehandler = self.app.make_new_fileshandler()
+        total = len(filehandler.datahandler.get_installed_files(name))
+        self.progress.setTotalSteps(total)
+        filehandler.archivehelper.report_installed_file_handled = self.report_md5check
+        unchanged, changed, extra = filehandler.audit_game_files(name,
+                                                                 from_install=from_install, time=time)
+        self.doc.set_info(unchanged, changed, extra)
+        self.frame.setText(self.doc.output())
+        self.progress_label.setText('Audit Completed')
+
+    def setSource(self, url):
+        print url
+        if url == 'show':
+            self.doc.append_unchanged_files()
+            self.frame.setText(self.doc.output())
+        
 class InfoBrowserCommon(object):
     def _init_common(self):
         # setup app pointer
         self.app = KApplication.kApplication()
-        self.doc = BaseDocument(self.app)
+        self.doc = MainGameInfoDocument(self.app)
         # setup dialog pointers
         self.select_title_screenshot_dlg = None
         
@@ -37,8 +95,18 @@ class InfoBrowserCommon(object):
         filehandler = self.app.game_fileshandler
         if action == 'cleanup':
             filehandler.cleanup_game(name)
+        elif action == 'backup':
+            filehandler.backup_game_files(name)
         elif action == 'prepare':
             filehandler.prepare_game(name)
+        elif action == 'prepare-fresh':
+            filehandler.prepare_game(name, extras=False)
+        elif action == 'audit-install':
+            dlg = AuditGameDialog(self.dialog_parent)
+            dlg.show()
+            self.app.processEvents()
+            dlg.audit_game(name, from_install=True)
+            #filehandler.audit_game_files(name, from_install=True)
         elif action == 'edit':
             dlg = EditGameDataDialog(self.dialog_parent, name)
             # here we connect the GameDataUpdated signal to the set_game_info method
@@ -90,7 +158,6 @@ class InfoBrowserCommon(object):
         name = dlg.game_name
         handler = self.app.game_datahandler
         handler.make_title_screenshot(name, fullpath)
-        self.doc = BaseDocument(self.app)
         self.destroy_select_title_screenshot_dlg()
         #print 'going to set game info to', name
         # the screenshot is not changing automatically here
@@ -151,10 +218,8 @@ class InfoBrowser(KTextBrowser, InfoBrowserCommon):
         #self.doc.set_info(name)
         #self.setText(self.doc.output())
         # so instead we do this quick hack
-        # make a new document
-        self.doc = BaseDocument(self.app)
         # display empty document
-        self.setText(self.doc.output())
+        self.setText('')
         # continue with what used to work
         self.doc.set_info(name)
         self.setText(self.doc.output())

@@ -1,6 +1,5 @@
 import os, sys
 import shutil
-from zipfile import ZipFile
 
 from dboxpykde.base import ExistsError, FileError
 from dboxpykde.base import md5sum, makepaths
@@ -37,6 +36,9 @@ class ArchiveHelper(object):
         makepaths(tpath)
         return tpath
 
+    def _unchanged_files_holding_path(self, path):
+        return '%s.tmp' % path
+    
     def determine_install_zipfilename(self, path=None, name=None):
         INSTALLED_ARCHIVES_PATH = self.app.installed_archives_path
         if path is not None:
@@ -58,6 +60,11 @@ class ArchiveHelper(object):
         archivename = os.path.join(EXTRAS_ARCHIVES_PATH, name)
         return archivename
 
+    def determine_extras_repos(self, name):
+        extras_archives_path = self.app.extras_archives_path
+        repos_path = os.path.join(extras_archives_path, name)
+        return repos_path
+    
     def determine_old_archivename(self, archivename):
         oldnum = 1
         oldarchive = '%s.bkup.%d' % (archivename, oldnum)
@@ -73,7 +80,9 @@ class ArchiveHelper(object):
         _checkifdir(path)
         here = os.getcwd()
         os.chdir(path)
+        count = 1
         for filename, md5hash in installed_files:
+            self.report_installed_file_handled(filename, count)
             if not os.path.exists(filename):
                 print filename, 'non-existant, skipping.'
             else:
@@ -81,10 +90,13 @@ class ArchiveHelper(object):
                     unchanged_files.append(filename)
                 else:
                     print filename, 'has changed.'
+            count += 1
         os.chdir(here)
         return unchanged_files
 
-
+    def report_installed_file_handled(self, filename, count):
+        print 'filename', filename, count
+    
     # using the list of unchanged files we get from handle_installed_files
     # we remove, or move elsewhere, those files to prepare for archiving
     # the leftovers.  If remove is True, we remove the files (we can restore
@@ -94,18 +106,22 @@ class ArchiveHelper(object):
         _checkifdir(path)
         here = os.getcwd()
         if not remove:
-            newpath = '%s.tmp' % path
+            newpath = self._unchanged_files_holding_path(path)
             makepaths(newpath)
         os.chdir(path)
         if remove:
             map(os.remove, unchanged_files)
         else:
+            print "remove is false, moving files to", newpath
             for afile in unchanged_files:
                 dirname, basename = os.path.split(afile)
                 newdir = os.path.join(newpath, dirname)
                 makepaths(newdir)
                 newfile = os.path.join(newdir, basename)
+                # clean up the path name
+                newfile = os.path.normpath(newfile)
                 os.rename(afile, newfile)
+            print os.listdir(newpath)
         os.chdir(here)
 
     # rename the unchanged files that were moved back to their
@@ -113,12 +129,16 @@ class ArchiveHelper(object):
     def rename_unchanged_files_to_orig(self, path, unchanged_files):
         _checkifdir(path)
         here = os.getcwd()
-        newpath = '%s.tmp' % path
+        os.chdir(path)
+        newpath = self._unchanged_files_holding_path(path)
         for afile in unchanged_files:
             dirname, basename = os.path.split(afile)
             newdir = os.path.join(newpath, dirname)
             newfile = os.path.join(newdir, basename)
+            # clean up the path name
+            newfile = os.path.normpath(newfile)
             os.rename(newfile, afile)
+        os.chdir(here)
         
     # this function extracts the extras archive for a game to a temporary
     # path, then returns that path
@@ -142,16 +162,23 @@ class ArchiveHelper(object):
     # temporary extracted path, then returns the staging path.
     def stage_rdiff_backup_archive(self, name, time='now'):
         tpath = self.extract_extras_archive(name)
-        staging_path = '%s-staging' % tpath
-        makepaths(staging_path)
-        restore_cmd = 'rdiff-backup --force -r %s %s %s' % (time, tpath, staging_path)
-        result = os.system(restore_cmd)
-        if result:
-            raise OSError, "there was a problem with %s" % restore_cmd
+        staging_path = self.stage_rdiff_backup_repos(tpath, time=time)
         # remove tpath
         self.remove_tree(tpath)
         return staging_path
 
+    # this function restores a rdiff-backup into a staging directory
+    # to be later rsync-ed into the game directory
+    # returns the staging path
+    def stage_rdiff_backup_repos(self, repos_path, time='now'):
+        staging_path = '%s-staging' % repos_path
+        makepaths(staging_path)
+        restore_cmd = 'rdiff-backup --force -r %s %s %s' % (time, repos_path, staging_path)
+        result = os.system(restore_cmd)
+        if result:
+            raise OSError, "there was a problem with %s" % restore_cmd
+        return staging_path
+    
     def perform_rdiff_backup(self, path, backup_path):
         if not os.path.isdir(backup_path):
             raise ExistsError, "backup path %s doesn't exist" % backup_path
@@ -211,25 +238,61 @@ class GameFilesHandler(object):
     # unarchive game files into main dosboxpath
     # unarchives from install archive
     # and get latest files from extras  archive
-    def prepare_game(self, name, time='now'):
+    # if extras is false, just prepare freshly installed game
+    def prepare_game(self, name, time='now', extras=True):
         fullpath = self._get_fullpath(name)
         if os.path.exists(fullpath):
             _checkifdir(fullpath)
         else:
             makepaths(fullpath)
         zfilename = self.archivehelper.determine_install_zipfilename(name=name)
-        archivename = self.archivehelper.determine_extras_archivename(name)
         if not os.path.exists(zfilename):
             raise ExistsError, "%s for %s doesn't exist." % (zfilename, name)
         zfile = MyZipFile(zfilename, 'r')
         zfile.extract(path=fullpath, report=self._report_extract_from_installed_archive)
-        if not os.path.exists(archivename):
-            print 'Using fresh install for %s' % name
-        else:
-            staging_path = self.archivehelper.stage_rdiff_backup_archive(name, time=time)
-            self.archivehelper.copy_staging_tree_with_rsync(staging_path, fullpath)
-            self.archivehelper.remove_tree(staging_path)
+        if extras:
+            self.restore_extra_files(name, time=time)
 
+    def restore_extra_files(self, name, time='now'):
+        fullpath = self._get_fullpath(name)
+        if self.app.myconfig.getboolean('filemanagement', 'extras_archives_tarballs'):
+            archivename = self.archivehelper.determine_extras_archivename(name)
+            if not os.path.exists(archivename):
+                print 'Using fresh install for', name
+            else:
+                staging_path = self.archivehelper.stage_rdiff_backup_archive(name, time=time)
+                self.archivehelper.copy_staging_tree_with_rsync(staging_path, fullpath)
+                self.archivehelper.remove_tree(staging_path)
+        else:
+            repos_path = self.archivehelper.determine_extras_repos(name)
+            if not os.path.isdir(repos_path):
+                print 'Using fresh install for', name
+            else:
+                staging_path = self.archivehelper.stage_rdiff_backup_repos(repos_path, time=time)
+                self.archivehelper.copy_staging_tree_with_rsync(staging_path, fullpath)
+                self.archivehelper.remove_tree(staging_path)
+                
+
+    def backup_extra_files(self, name, path=None):
+        if path is None:
+            path = self._get_fullpath(name)
+        tarball = self.app.myconfig.getboolean('filemanagement', 'extras_archives_tarballs')
+        # determine where the rdiff-backup repository is
+        if tarball:
+            # if it's in a tarball, extract it
+            repos_path = self.archivehelper.extract_extras_archive(name)
+        else:
+            repos_path = self.archivehelper.determine_extras_repos(name)
+        # do the rdiff-backup
+        self.archivehelper.perform_rdiff_backup(path, repos_path)
+        # if rdiff-backup repos is stored in a tarball, we need to
+        # archive it and remove the repos path
+        if tarball:
+            self.archivehelper.archive_rdiff_backup_repos(name, repos_path)
+            self.archivehelper.remove_tree(repos_path)
+            
+            
+    
     def _report_add_to_installed_archive(self, filename, count, total):
         method = '_report_add_to_installed_archive'
         print '%s -> %s, %d of %d' % (method, filename, count, total)
@@ -273,16 +336,28 @@ class GameFilesHandler(object):
         unchanged_files = self.archivehelper.handle_installed_files(fullpath, installed_files)
         # remove the unchanged files
         self.archivehelper.cleanup_unchanged_files(fullpath, unchanged_files)
-        # extract the extras archive to hold the remaining files
-        tpath = self.archivehelper.extract_extras_archive(name)
-        # do the rdiff-backup
-        self.archivehelper.perform_rdiff_backup(fullpath, tpath)
-        # archive the rdiff-backup repository
-        self.archivehelper.archive_rdiff_backup_repos(name, tpath)
-        # remove the temp path
-        self.archivehelper.remove_tree(tpath)
+        # backup the remaining extra files
+        self.backup_extra_files(name, path=fullpath)
         # finally remove the installed path
         self.archivehelper.remove_tree(fullpath)
+
+    # move files already in install archive to new location
+    # and backup remaining files in extras archive (using rdiff-backup)
+    # then move installed files back
+    def backup_game_files(self, name):
+        fullpath = self._get_fullpath(name)
+        installed_files = self.datahandler.get_installed_files(name)
+        # figure out which files to remove
+        unchanged_files = self.archivehelper.handle_installed_files(fullpath, installed_files)
+        # move the unchanged files
+        self.archivehelper.cleanup_unchanged_files(fullpath, unchanged_files, remove=False)
+        # backup the remaining extra files
+        self.backup_extra_files(name, path=fullpath)
+        # put unchanged files back to original place
+        self.archivehelper.rename_unchanged_files_to_orig(fullpath, unchanged_files)
+        # finally remove the path where unchanged files were held
+        newpath = self.archivehelper._unchanged_files_holding_path(fullpath)
+        self.archivehelper.remove_tree(newpath)
 
     # get full install path of named game
     def _get_fullpath(self, name):
@@ -301,7 +376,24 @@ class GameFilesHandler(object):
             return True
         else:
             return False
-        
+
+    def audit_game_files(self, name, from_install=True, time='now'):
+        fullpath = self._get_fullpath(name)
+        installed_files = self.datahandler.get_installed_files(name)
+        unchanged_files = self.archivehelper.handle_installed_files(fullpath, installed_files)
+        installed_files = [t[0] for t in installed_files]
+        changed_files = [f for f in installed_files if f not in unchanged_files]
+        here = os.getcwd()
+        os.chdir(fullpath)
+        extra_files = []
+        for root, dirs, files in os.walk('.'):
+            for afile in files:
+                bfile = os.path.join(root, afile)
+                if bfile not in installed_files:
+                    extra_files.append(bfile)
+        os.chdir(here)
+        return unchanged_files, changed_files, extra_files
+    
 if __name__ == '__main__':
     #af = archive_fresh_install
     #af(os.getcwd(), 'test')

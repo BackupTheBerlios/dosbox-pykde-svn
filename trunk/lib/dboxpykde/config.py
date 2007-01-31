@@ -27,6 +27,11 @@ installed_archives_path:	%(__archive_parent_path)s/dosbox-installed
 # path to the extras archives (backups of savegames and configs)
 extras_archives_path:	%(__archive_parent_path)s/dosbox-extras
 
+# This option determines whether the extra files
+# are archived in tarballs, or just left as a
+# rdiff-backup tree.
+extras_archives_tarballs:  True
+
 # option to keep from overwriting extras archives
 # this should normally be set to true, as by default
 # all extras archives are rdiff-backup trees

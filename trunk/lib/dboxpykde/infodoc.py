@@ -6,7 +6,7 @@ from dboxpykde.contrib.forgetHTML import Anchor, Table
 from dboxpykde.contrib.forgetHTML import TableRow, TableCell
 from dboxpykde.contrib.forgetHTML import TableHeader, Header
 from dboxpykde.contrib.forgetHTML import Image
-
+from dboxpykde.contrib.forgetHTML import Paragraph, Break
 from base import make_url
 
 class Bold(Inline):
@@ -23,12 +23,80 @@ class BaseDocument(SimpleDocument):
                                width='100%')
         self.body.set(self.maintable)
 
+class AuditGameDocument(BaseDocument):
+    def set_info(self, unchanged, changed, extra):
+        self.unchanged_files = unchanged
+        self.changed_files = changed
+        self.extra_files = extra
+        self._add_section('Extra Files', extra)
+        self._add_section('Changed Files', changed)
+        #self._add_section('Unchanged Files', unchanged)
+        self.urow = TableRow()
+        self.ucell = TableCell(Bold('%d Unchanged Files' % len(self.unchanged_files)),
+                               bgcolor='DarkSeaGreen4')
+        anchor = Anchor('show', href='show')
+        self.ucell.append(anchor)
+        self.urow.append(self.ucell)
+        self.maintable.append(self.urow)
+
+    def append_unchanged_files(self):
+        #self.urow._contents = []
+        self.ucell = TableCell(Bold('Unchanged Files'), bgcolor='DarkSeaGreen4')
+        self.urow.set(self.ucell)
+        self._add_files(self.unchanged_files)
+        
+            
+    def _add_section(self, title, files):
+        if not files:
+            title = 'No %s' % title
+        row = TableRow()
+        cell = TableCell(Bold(title), bgcolor='DarkSeaGreen4')
+        row.set(cell)
+        self.maintable.append(row)
+        self._add_files(files)
+        
+    def _add_files(self, files):
+        for afile in files:
+            row = TableRow()
+            cell = TableCell(afile, bgcolor='DarkSeaGreen2')
+            row.set(cell)
+            self.maintable.append(row)
+            
+class MainGameInfoDocument(BaseDocument):
     def set_info(self, name):
         gamedata = self.datahandler.get_game_data(name)
         self.gamedata = gamedata
         fullname = TableHeader(gamedata['fullname'], colspan=0, align='center')
         fullname_row = TableRow(fullname)
         self.maintable.set(fullname_row)
+        self.append_description()
+        # setup title screenshot section
+        cell = self._append_new_section()
+        cell.append(self.make_title_screenshot_table(gamedata))
+        # setup dosbox data section
+        cell = self._append_new_section()
+        cell.append(self.make_dosbox_data_table())
+        # setup weblinks section
+        # don't bother creating this section unless
+        # there are some weblinks
+        if gamedata['weblinks']:
+            cell = self._append_new_section()
+            cell.set(self.make_weblinks_table())
+        # setup status and action section
+        cell = self._append_new_section()
+        cell.set(self.make_action_table(name))
+        
+    # append a new row and return
+    # a reference to that row's cell
+    def _append_new_section(self):
+        new_row = TableRow()
+        new_cell = TableCell(colspan=0)
+        new_row.append(new_cell)
+        self.maintable.append(new_row)
+        return new_cell
+    
+    def append_description(self):
+        gamedata = self.gamedata
         desc_lbl = Bold('description')
         desc_lbl_cell = TableCell(desc_lbl, colspan=0, align='center', bgcolor='DarkSeaGreen4')
         desc_lbl_row = TableRow(desc_lbl_cell)
@@ -41,38 +109,7 @@ class BaseDocument(SimpleDocument):
         desc = TableCell(description, colspan=0)
         desc_row = TableRow(desc)
         self.maintable.append(desc_row)
-        # setup title screenshot section
-        row = TableRow()
-        cell = TableCell(colspan=0)
-        row.set(cell)
-        cell.append(self.make_title_screenshot_table(gamedata))
-        self.maintable.append(row)
         
-        # setup dosbox data section
-        dosbox_data_row = TableRow()
-        dosbox_data_cell = TableCell(colspan=0)
-        dosbox_data_row.set(dosbox_data_cell)
-        dosbox_data_cell.append(self.make_dosbox_data_table())
-        self.maintable.append(dosbox_data_row)
-
-        # setup weblinks section
-        # don't bother creating this section unless
-        # there are some weblinks
-        if gamedata['weblinks']:
-            weblinks_table_row = TableRow()
-            weblinks_table_cell = TableCell(colspan=0)
-            weblinks_table_row.set(weblinks_table_cell)
-            weblinks_table_cell.set(self.make_weblinks_table())
-            self.maintable.append(weblinks_table_row)
-        
-        # setup status and action section
-        action_row = TableRow()
-        action_cell = TableCell(colspan=0)
-        action_row.append(action_cell)
-        self.maintable.append(action_row)
-        action_cell.set(self.make_action_table(name))
-
-
     def make_title_screenshot_table(self, gamedata):
         name = gamedata['name']
         screenshot = self.app.game_datahandler.get_title_screenshot_filename(name)
@@ -131,22 +168,37 @@ class BaseDocument(SimpleDocument):
         atable = Table(class_='ActionTable')
         available_row = TableRow()
         status = self.filehandler.get_game_status(name)
+        align = dict(valign='center', align='center')
         if status:
-            available_cell = TableCell('available', bgcolor='DarkSeaGreen4')
+            available_cell = TableCell(Bold('available'), bgcolor='DarkSeaGreen4', **align)
         else:
-            available_cell = TableCell('unavailable', bgcolor='Red')
+            available_cell = TableCell(Bold('unavailable'), bgcolor='Red', **align)
+        filemanage_anchors = Paragraph()
         if not status:
             filemanage_anchor = Anchor('prepare game', href=make_url('prepare', name))
+            filemanage_anchors.append(filemanage_anchor)
+            filemanage_anchors.append(Break())
+            filemanage_anchor = Anchor('prepare game as fresh install',
+                                       href=make_url('prepare-fresh', name))
+            filemanage_anchors.append(filemanage_anchor)
+            
         else:
             filemanage_anchor = Anchor('clean up game area', href=make_url('cleanup', name))
-        filemanage_cell = TableCell(filemanage_anchor)
+            filemanage_anchors.append(filemanage_anchor)
+            filemanage_anchors.append(Break())
+            filemanage_anchors.append(Break())
+            filemanage_anchor = Anchor('backup extra files', href=make_url('backup', name))
+            filemanage_anchors.append(filemanage_anchor)
+            filemanage_anchors.append(Break())
+            filemanage_anchors.append(Break())
+            filemanage_anchor = Anchor('Audit game from fresh install',
+                                       href=make_url('audit-install', name))
+            filemanage_anchors.append(filemanage_anchor)
+        filemanage_cell = TableCell(filemanage_anchors)
 
         available_row.append(available_cell)
         available_row.append(filemanage_cell)
         atable.append(available_row)
-        #filemanage_row = TableRow()
-        #filemanage_row.append(filemanage_cell)
-        #atable.append(filemanage_row)
         edit_row = TableRow()
         edit_anchor = Anchor("edit this game's data", href=make_url('edit', name))
         edit_row.append(TableCell(edit_anchor))
