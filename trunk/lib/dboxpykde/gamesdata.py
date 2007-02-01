@@ -1,7 +1,5 @@
 import os
 
-from xml.dom.ext import PrettyPrint
-#from xml.dom.minidom import DOMImplementation, Document
 from xml.dom.minidom import Element, Text
 from xml.dom.minidom import parse as parse_file
 from xml.dom.minidom import parseString as parse_string

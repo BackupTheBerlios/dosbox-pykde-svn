@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os, sys, glob
+import commands
 from distutils.core import setup
 
 # we don't want to clutter the namespace in site-packages
@@ -7,6 +8,16 @@ from distutils.core import setup
 import compileall
 from distutils.command.clean import clean as _clean
 from distutils.command.build import build as _build
+
+def get_version(astuple=False):
+    orig_path = [p for p in sys.path]
+    sys.path.insert(0, 'lib')
+    from dboxpykde import VERSION
+    sys.path = orig_path
+    if astuple:
+        return VERSION
+    else:
+        return '.'.join(map(str, VERSION))
 
 
 # override clean command to remove compiled modules
@@ -36,11 +47,12 @@ class build(_build):
         # remember that data_files and docs_directory_html are global here
         # this needs to be done here for the html pages to be included in the
         # data files, without statically listing them in the data_files definition
-        data_files.append((docs_directory_html, glob.glob('data/doc/*.html')))
-
+        html_files = glob.glob('data/doc/*.html')
+        data_files.append((docs_directory_html, html_files))
+        data_files.append((kde_docs_directory_html, html_files))
         
 
-version = '0'
+version = get_version()
 description = 'Dosbox frontend for KDE written in PyKDE'
 author = 'Joseph Rawson'
 author_email = 'umeboshi@gregscomputerservice.com'
@@ -51,7 +63,8 @@ scripts = ['dosbox-pykde']
 # with the next lines we assume that this is being built with the --prefix /usr option
 docs_directory = 'share/doc/dosbox-pykde'
 docs_directory_html = os.path.join(docs_directory, 'html')
-
+_kde_html_parent = commands.getoutput('kde-config --path html').split(':')[1]
+kde_docs_directory_html = os.path.join(_kde_html_parent, 'en', 'dosbox-pykde')
 packages = ['dboxpykde']
 subpacks = ['common', 'contrib', 'filemanagement', 'kdelib', 'qtwin']
 kdelib_subpacks = ['dosboxcfg']

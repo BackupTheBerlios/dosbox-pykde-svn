@@ -18,6 +18,32 @@ def make_md5sum_dict(installed_files):
     print 'called make_md5sum_dict'
     return dict(installed_files)
 
+def convert_filename_to_uppercase(filename, root):
+    converted = False
+    if filename != filename.upper():
+        old = os.path.join(root, filename)
+        new = os.path.join(root, filename.upper())
+        os.rename(old, new)
+        converted = True
+    return converted
+
+def convert_tree_to_uppercase(path):
+    converted = []
+    for root, dirs files in os.walk(path, topdown=False):
+        for dname in dirs:
+            if convert_filename_to_uppercase(dname, root):
+                converted.append(os.path.join(root, dname))
+        for fname in files:
+            if convert_filename_to_uppercase(fname, root):
+                converted.append(os.path.join(root, fname))
+    return converted
+
+            
+
+
+# generate md5sums for all files
+# in the current directory recursively
+# must be in the target directory before calling this
 def generate_md5sums():
     installed_files = []
     for root, dirs, files in os.walk('.', topdown=True):
@@ -320,6 +346,10 @@ class GameFilesHandler(object):
     
         
     def add_new_game(self, gamedata, path):
+        print 'ensure all files and directories are uppercase'
+        converted = convert_tree_to_uppercase(path)
+        if converted:
+            print 'these files converted to uppercase', converted
         print 'archive as fresh install'
         installed_files = self.archive_fresh_install(gamedata, path)
         print 'archived %d files' % len(installed_files)
