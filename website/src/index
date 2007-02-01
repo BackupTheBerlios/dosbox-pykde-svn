@@ -1,9 +1,13 @@
 Dosbox-pykde_
 ===============
 
+.. contents:: :backlinks: entry
+
+
 This is the homepage of dosbox-pykde_.  Not much here yet, just started writing the page.
 
 --------------------
+
 What is it?
 --------------------
 
@@ -72,7 +76,14 @@ Features
 
   - Web/Documentation links
 
+    - While this feature started out to be a way to launch a web browser for links pertaining to
+      the game, it is also useful for linking to local documents like manuals, maps and
+      walkthroughs.
+
 - Game specific configuration
+
+  - While this is currently implemented, the config files must be made manually with a
+    text editor.
 
 
 -----------------
@@ -132,10 +143,10 @@ Dependencies
 - Main Dependencies:
 
   - Python_ - The whole application is written in python.
+    - Python 2.4 is being used for development, dosbox-pykde should work with 2.3 now
+    but this may change shortly in the future.
 
   - PyKDE_ - Python bindings for the KDE desktop environment.
-
-  - forgetHTML_ - A pythonic way of writing HTML documents.
 
   - rdiff-backup_ - Used for making incremental backups of saved games and configurations.
 
@@ -147,10 +158,21 @@ Dependencies
     
     - This may be replaced later with shutil.copytree().
 
-  - tar_ - Used to archive the rdiff-backup repositories, I'm afraid to use zip for this.
+  - Optional dependencies:
 
-  - bzip2_ - Used with tar above to compress the rdiff-backup repositories.
+    - tar_ - Used to archive the rdiff-backup repositories, I'm afraid to use zip for this.
 
+    - bzip2_ - Used with tar above to compress the rdiff-backup repositories.
+
+    - while tar and bzip2 are optional, the code hasn't been well tested.  Also, changing
+      your mind later on about using them may be difficult.  It is currently suggested to go
+      ahead and use them.
+  
+  - Removed dependencies:
+  
+    - forgetHTML_ - A pythonic way of writing HTML documents. This is currently included with 
+      dosbox-pykde.
+      
 
 -----------------------------
 
@@ -215,7 +237,74 @@ To run from the source tree, type::
 Documentation
 ---------------------
 
-None yet.
+Working on this.  It is currently located in data/doc/index.docbook .  It can be built 
+from the source tree with::
+
+	pushd data/doc && meinproc index.docbook && popd
+
+This will build a collection of html files in the data/doc  directory.
+
+The docbook documentation is planned to be built, installed in the future.
+
+-------------------
+
+Planned changes
+---------------------------
+
+This section is to describe changes that will affect the current usage of dosbox-pykde.  This 
+includes changes in the configuration, or changes to the locations of certain files and 
+directories that will possibly adversely affect users.
+
+- Decide on how to implement alternative file management methods.
+
+- Move the main config file from data directory to config directory.
+
+
+-------------------------
+
+Todo
+--------
+
+Here is a list of things that need to be done.  These things should not affect the usage of
+the application from version to version.
+
+- Use a wizard to create the default configuration.
+
+- Devise a method for implementing the autoexec section in the dosbox configuration.
+
+- Add more tooltips to the gui.
+
+- Generate the documentation during the build process, and figure out how to install it.
+
+  - Determine the requirements for building.  
+
+    - Do most kde users have meinproc already installed?
+
+    - meinproc is in kdelibs on debian
+
+  - Figure out where to install docs, and if they need registering with KDE.
+
+- Create some icons, and figure out how to install them.
+
+- Finish writing the documentation.
+
+- Make a gui for handling the game specific configurations.
+
+- Clean up the code surrounding the various progress dialogs.
+
+- Decide the fate of the dosbox-pyqt part of the application.
+
+- Add new config options to settings widget.
+
+- Replace os.system calls with subprocess.call or subprocess.Popen
+
+- make a primary and secondary installed_archives_path options
+
+  - one for writing new installs, and another for read-only access (like from a dvd)
+
+- categorize this todo list
+
+----------------
 
 
 
@@ -234,5 +323,8 @@ None yet.
 .. _dosbox: http://dosbox.sourceforge.net/
 .. _KDE: http://www.kde.org/
 .. _DboxFE: http://chmaster.freeforge.net/dboxfe-project.htm
+
+
+
 
 

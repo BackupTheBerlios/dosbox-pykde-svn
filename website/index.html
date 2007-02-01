@@ -292,9 +292,28 @@ ul.auto-toc {
 <body>
 <div class="document" id="dosbox-pykde">
 <h1 class="title"><a class="reference" href="http://dosbox-pykde.berlios.de">Dosbox-pykde</a></h1>
+<div class="contents topic">
+<p class="topic-title first"><a id="contents" name="contents">Contents</a></p>
+<ul class="simple">
+<li><a class="reference" href="#what-is-it" id="id3" name="id3">What is it?</a></li>
+<li><a class="reference" href="#goals" id="id4" name="id4">Goals</a></li>
+<li><a class="reference" href="#features" id="id5" name="id5">Features</a></li>
+<li><a class="reference" href="#a-short-history-and-rationale-about-file-management" id="id6" name="id6">A short history and rationale about file management</a></li>
+<li><a class="reference" href="#dependencies" id="id7" name="id7">Dependencies</a></li>
+<li><a class="reference" href="#project" id="id8" name="id8">Project</a></li>
+<li><a class="reference" href="#related-projects" id="id9" name="id9">Related projects</a></li>
+<li><a class="reference" href="#intended-audience-users" id="id10" name="id10">Intended Audience/Users</a></li>
+<li><a class="reference" href="#download" id="id11" name="id11">Download</a></li>
+<li><a class="reference" href="#install" id="id12" name="id12">Install</a></li>
+<li><a class="reference" href="#documentation" id="id13" name="id13">Documentation</a></li>
+<li><a class="reference" href="#planned-changes" id="id14" name="id14">Planned changes</a></li>
+<li><a class="reference" href="#todo" id="id15" name="id15">Todo</a></li>
+</ul>
+</div>
 <p>This is the homepage of <a class="reference" href="http://dosbox-pykde.berlios.de">dosbox-pykde</a>.  Not much here yet, just started writing the page.</p>
+<hr class="docutils" />
 <div class="section">
-<h1><a id="what-is-it" name="what-is-it">What is it?</a></h1>
+<h1><a class="toc-backref" href="#id3" id="what-is-it" name="what-is-it">What is it?</a></h1>
 <p>Dosbox-pykde is a frontend for <a class="reference" href="http://dosbox.sourceforge.net/">dosbox</a> for the <a class="reference" href="http://www.kde.org/">KDE</a> desktop.  It is similar to other frontends
 for dosbox.  The major difference with this one, is that it is centered around file management.
 This frontend is designed to separate the freshly installed files from the changed
@@ -309,9 +328,10 @@ out some of the features.  I may make it optional to tarball the secondary archi
 user be able to just hold an rdiff-backup directory.  I may make rdiff-backup optional, and make
 a cheap internal replacement for it.  I don't really have a frontend to handle configurations yet.
 Currently, only one default configuration is supported, with per game overrides.  Autoexec lines in the configuration are not yet supported.</p>
+</div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="goals" name="goals">Goals</a></h2>
+<h1><a class="toc-backref" href="#id4" id="goals" name="goals">Goals</a></h1>
 <p>One of the goals of this project is to provide a good example application of <a class="reference" href="http://www.riverbankcomputing.co.uk/pykde/">PyKDE</a>.  I have
 spent some extra time in writing comments throughout the code detailing some of PyKDE.
 As of now, there are very few applications that use PyKDE primarily.  There are quite a few,
@@ -335,7 +355,7 @@ are preferred to be handled by python in lieu of using the Qt equivalents.</p>
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="features" name="features">Features</a></h2>
+<h1><a class="toc-backref" href="#id5" id="features" name="features">Features</a></h1>
 <ul class="simple">
 <li>File management<ul>
 <li>All new games added to the frontend are archived in a &quot;fresh install&quot; zip file.</li>
@@ -345,15 +365,24 @@ are preferred to be handled by python in lieu of using the Qt equivalents.</p>
 <li>HTML presentation of information<ul>
 <li>HTML description of game</li>
 <li>Screenshots - currently only displaying title screenshot</li>
-<li>Web/Documentation links</li>
+<li>Web/Documentation links<ul>
+<li>While this feature started out to be a way to launch a web browser for links pertaining to
+the game, it is also useful for linking to local documents like manuals, maps and
+walkthroughs.</li>
 </ul>
 </li>
-<li>Game specific configuration</li>
+</ul>
+</li>
+<li>Game specific configuration<ul>
+<li>While this is currently implemented, the config files must be made manually with a
+text editor.</li>
+</ul>
+</li>
 </ul>
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="a-short-history-and-rationale-about-file-management" name="a-short-history-and-rationale-about-file-management">A short history and rationale about file management</a></h2>
+<h1><a class="toc-backref" href="#id6" id="a-short-history-and-rationale-about-file-management" name="a-short-history-and-rationale-about-file-management">A short history and rationale about file management</a></h1>
 <p>Probably the most feature of this frontend is its ability to manage archives.  Most emulator
 frontends have little need for this type of functionality, because they are mainly console,
 or arcade frontends.  These frontend usually work off of rom images or a zip file of rom images,
@@ -393,12 +422,13 @@ haven't thought it through yet.</p>
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="dependencies" name="dependencies">Dependencies</a></h2>
+<h1><a class="toc-backref" href="#id7" id="dependencies" name="dependencies">Dependencies</a></h1>
 <ul class="simple">
 <li>Main Dependencies:<ul>
-<li><a class="reference" href="http://python.org">Python</a> - The whole application is written in python.</li>
+<li><a class="reference" href="http://python.org">Python</a> - The whole application is written in python.
+- Python 2.4 is being used for development, dosbox-pykde should work with 2.3 now
+but this may change shortly in the future.</li>
 <li><a class="reference" href="http://www.riverbankcomputing.co.uk/pykde/">PyKDE</a> - Python bindings for the KDE desktop environment.</li>
-<li><a class="reference" href="http://forgethtml.sourceforge.net/">forgetHTML</a> - A pythonic way of writing HTML documents.</li>
 <li><a class="reference" href="http://www.nongnu.org/rdiff-backup/">rdiff-backup</a> - Used for making incremental backups of saved games and configurations.</li>
 <li><a class="reference" href="http://dosbox.sourceforge.net/">dosbox</a> - This is a frontend for dosbox.  The application has little value without this.</li>
 </ul>
@@ -408,32 +438,43 @@ haven't thought it through yet.</p>
 <li>This may be replaced later with shutil.copytree().</li>
 </ul>
 </li>
+<li>Optional dependencies:<ul>
 <li><a class="reference" href="http://www.gnu.org/software/tar/">tar</a> - Used to archive the rdiff-backup repositories, I'm afraid to use zip for this.</li>
 <li><a class="reference" href="http://www.bzip.org/">bzip2</a> - Used with tar above to compress the rdiff-backup repositories.</li>
+<li>while tar and bzip2 are optional, the code hasn't been well tested.  Also, changing
+your mind later on about using them may be difficult.  It is currently suggested to go
+ahead and use them.</li>
+</ul>
+</li>
+<li>Removed dependencies:<ul>
+<li><a class="reference" href="http://forgethtml.sourceforge.net/">forgetHTML</a> - A pythonic way of writing HTML documents. This is currently included with
+dosbox-pykde.</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="project" name="project">Project</a></h2>
+<h1><a class="toc-backref" href="#id8" id="project" name="project">Project</a></h1>
 <p><a class="reference" href="http://developer.berlios.de/projects/dosbox-pykde">project</a> page</p>
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="related-projects" name="related-projects">Related projects</a></h2>
+<h1><a class="toc-backref" href="#id9" id="related-projects" name="related-projects">Related projects</a></h1>
 <dl class="docutils">
 <dt><a class="reference" href="http://chmaster.freeforge.net/dboxfe-project.htm">DboxFE</a> - This is a frontend using C++ Qt.  It has an advantage of being able to also run</dt>
 <dd>in windows.</dd>
 </dl>
 </div>
 <div class="section">
-<h2><a id="intended-audience-users" name="intended-audience-users">Intended Audience/Users</a></h2>
+<h1><a class="toc-backref" href="#id10" id="intended-audience-users" name="intended-audience-users">Intended Audience/Users</a></h1>
 <p>KDE users on i386/amd64 architectures.</p>
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="download" name="download">Download</a></h2>
+<h1><a class="toc-backref" href="#id11" id="download" name="download">Download</a></h1>
 <p>Currently the best way to obtain dosbox-pykde is through subversion:</p>
 <pre class="literal-block">
 svn checkout svn://svn.berlios.de/dosbox-pykde/trunk dosbox-pykde
@@ -442,7 +483,7 @@ svn checkout svn://svn.berlios.de/dosbox-pykde/trunk dosbox-pykde
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="install" name="install">Install</a></h2>
+<h1><a class="toc-backref" href="#id12" id="install" name="install">Install</a></h1>
 <p>The python distutils are used to install this application.</p>
 <p>In the toplevel directory, type:</p>
 <pre class="literal-block">
@@ -460,10 +501,59 @@ PYTHONPATH=`pwd`/lib ./dosbox-pykde
 </div>
 <hr class="docutils" />
 <div class="section">
-<h2><a id="documentation" name="documentation">Documentation</a></h2>
-<p>None yet.</p>
-<p>This <a class="reference" href="http://developer.berlios.de/projects/dosbox-pykde">project</a> is hosted by <a class="reference" href="http://developer.berlios.de"><img alt="berlios" src="http://developer.berlios.de/bslogo.php?group_id=0&amp;type=1" /></a>.</p>
+<h1><a class="toc-backref" href="#id13" id="documentation" name="documentation">Documentation</a></h1>
+<p>Working on this.  It is currently located in data/doc/index.docbook .  It can be built
+from the source tree with:</p>
+<pre class="literal-block">
+pushd data/doc &amp;&amp; meinproc index.docbook &amp;&amp; popd
+</pre>
+<p>This will build a collection of html files in the data/doc  directory.</p>
+<p>The docbook documentation is planned to be built, installed in the future.</p>
 </div>
+<hr class="docutils" />
+<div class="section">
+<h1><a class="toc-backref" href="#id14" id="planned-changes" name="planned-changes">Planned changes</a></h1>
+<p>This section is to describe changes that will affect the current usage of dosbox-pykde.  This
+includes changes in the configuration, or changes to the locations of certain files and
+directories that will possibly adversely affect users.</p>
+<ul class="simple">
+<li>Decide on how to implement alternative file management methods.</li>
+<li>Move the main config file from data directory to config directory.</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section">
+<h1><a class="toc-backref" href="#id15" id="todo" name="todo">Todo</a></h1>
+<p>Here is a list of things that need to be done.  These things should not affect the usage of
+the application from version to version.</p>
+<ul class="simple">
+<li>Use a wizard to create the default configuration.</li>
+<li>Devise a method for implementing the autoexec section in the dosbox configuration.</li>
+<li>Add more tooltips to the gui.</li>
+<li>Generate the documentation during the build process, and figure out how to install it.<ul>
+<li>Determine the requirements for building.<ul>
+<li>Do most kde users have meinproc already installed?</li>
+<li>meinproc is in kdelibs on debian</li>
+</ul>
+</li>
+<li>Figure out where to install docs, and if they need registering with KDE.</li>
+</ul>
+</li>
+<li>Create some icons, and figure out how to install them.</li>
+<li>Finish writing the documentation.</li>
+<li>Make a gui for handling the game specific configurations.</li>
+<li>Clean up the code surrounding the various progress dialogs.</li>
+<li>Decide the fate of the dosbox-pyqt part of the application.</li>
+<li>Add new config options to settings widget.</li>
+<li>Replace os.system calls with subprocess.call or subprocess.Popen</li>
+<li>make a primary and secondary installed_archives_path options<ul>
+<li>one for writing new installs, and another for read-only access (like from a dvd)</li>
+</ul>
+</li>
+<li>categorize this todo list</li>
+</ul>
+<hr class="docutils" />
+<p>This <a class="reference" href="http://developer.berlios.de/projects/dosbox-pykde">project</a> is hosted by <a class="reference" href="http://developer.berlios.de"><img alt="berlios" src="http://developer.berlios.de/bslogo.php?group_id=0&amp;type=1" /></a>.</p>
 </div>
 </div>
 </body>
