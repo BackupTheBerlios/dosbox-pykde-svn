@@ -304,6 +304,11 @@ the application from version to version.
 
 - categorize this todo list
 
+- add more dialogs for both information and yes/no to make sure requested action is
+  proper
+
+
+
 ----------------
 
 
@@ -323,7 +328,7 @@ the application from version to version.
 .. _dosbox: http://dosbox.sourceforge.net/
 .. _KDE: http://www.kde.org/
 .. _DboxFE: http://chmaster.freeforge.net/dboxfe-project.htm
-
+.. _PyXML: http://pyxml.sourceforge.net/
 
 
 
