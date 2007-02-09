@@ -1,0 +1,15 @@
+Source: dosbox-pykde
+Section: kde
+Priority: optional
+Maintainer: Joseph Rawson <umeboshi@gregscomputerservice.com>
+Build-Depends: @cdbs@, python-dev (>= 2.3), python-support
+Standards-Version: 5
+
+Package: dosbox-pykde
+Section:	kde
+Priority: optional
+Architecture: any
+Depends: python-kde3, dosbox, rdiff-backup, rsync
+Recommends: bzip2
+Description: A KDE frontend for dosbox
+  Dosbox-pykde is a dosbox frontend for the KDE desktop.
