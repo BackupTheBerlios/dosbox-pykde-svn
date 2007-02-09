@@ -1,4 +1,5 @@
 import os
+from StringIO import StringIO
 
 from qt import SIGNAL, SLOT
 
@@ -10,6 +11,8 @@ from kdeui import KAboutDialog
 
 from dcopexport import DCOPExObj
 
+from dboxpykde import VERSION
+from dboxpykde import get_version
 from dboxpykde.base import makepaths
 from dboxpykde.config import generate_default_config
 from dboxpykde.config import generate_default_dosbox_config
@@ -34,10 +37,11 @@ class DosboxHandler(DCOPExObj):
 # about this program
 class AboutData(KAboutData):
     def __init__(self):
+        version = get_version()
         KAboutData.__init__(self,
                             'dosbox-pykde',
                             'dosbox-pykde',
-                            '0.1',
+                            version,
                             "Another dosbox frontend")
         self.addAuthor('Joseph Rawson', 'author',
                        'umeboshi@gregscomputerservice.com')
@@ -88,10 +92,19 @@ class MainApplication(KApplication):
         self._generate_archive_directories()
         
     def update_main_config(self, configobj):
-        cfile = file(self.mainconfigfilename, 'w')
+        cfile = StringIO()
         configobj.write(cfile)
-        cfile.close()
+        cfile.seek(0)
+        self.myconfig.readfp(cfile)
+        self.save_main_config(self)
         self.load_main_config()
+
+    def save_main_config(self, filename=None):
+        if filename is None:
+            filename = self.mainconfigfilename
+        cfile = file(filename, 'w')
+        self.myconfig.write(cfile)
+        cfile.close()
         
     def make_new_datahandler(self):
         return GameDataHandler(self)

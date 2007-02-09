@@ -29,7 +29,7 @@ def convert_filename_to_uppercase(filename, root):
 
 def convert_tree_to_uppercase(path):
     converted = []
-    for root, dirs files in os.walk(path, topdown=False):
+    for root, dirs, files in os.walk(path, topdown=False):
         for dname in dirs:
             if convert_filename_to_uppercase(dname, root):
                 converted.append(os.path.join(root, dname))

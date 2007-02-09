@@ -395,36 +395,17 @@ class MainWindow(MainWindowCommon, KMainWindow):
             print 'here we are', inst
             KMessageBox.error(self, '%s already exists' % inst.args)
         dlg.close()
-        
+
     # here action is either 'cleanup_game'
     # or 'prepare_game'
     def _perform_multigame_action(self, gamelist, action):
-        fhandler = self.app.game_fileshandler
-        if not hasattr(fhandler, action):
-            raise StandardError, 'no %s attribute for game_fileshandler' % action
-        num_games = len(gamelist)
-        real_action = getattr(fhandler, action)
-        dlg = MultiGameProgressDialog(self)
-        dlg.resize(400, 200)
-        if action == 'prepare_game':
-            dlg.game_action = 'Prepare'
-        elif action == 'cleanup_game':
-            dlg.game_action = 'Clean up'
-            
-        progress = dlg.progressBar()
-        progress.setTotalSteps(num_games)
-        dlg.show()
-        index = 1
-        for game in gamelist:
-            print "PERFORM %s on %s, index %d" % (action, game, index)
-            progress.setProgress(index)
-            title = self.game_titles[game]
-            dlg.set_label(title)
-            self.app.processEvents()
-            real_action(game)
-            index += 1
-        dlg.close()
-
+        if gamelist:
+            dlg = MultiGameProgressDialog(self, action)
+            dlg.resize(400, 200)
+            dlg.show()
+            dlg.perform_action(gamelist, self.game_titles)
+            dlg.close()
+        
         
 if __name__ == '__main__':
     print "testing module"

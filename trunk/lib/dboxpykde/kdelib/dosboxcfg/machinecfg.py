@@ -51,11 +51,13 @@ class MachineConfigWidget(BaseDosboxConfigWidget):
         self.grid.addWidget(self.render_groupbox, 0, 1)
         self.frameskip_box = ConfigSpinWidget(self.render_groupbox,
                                               'Frame skip', suffix=' frames')
+        self.tooltips.add(self.frameskip_box, 'How many frames to skip.')
         self.aspect_check = QCheckBox(self.render_groupbox)
         self.aspect_check.setText('Aspect correction')
+        self.tooltips.add(self.aspect_check, 'Try to keep aspect ratio.')
         self.scaler_box = ConfigComboBoxWidget(self.render_groupbox,
                                                'Scaler', self._default_scalers)
-
+        self.tooltips.add(self.scaler_box, 'Select size and effect of video')
         # cpu group
         # make a big number for cycles that should never be needed
         cyclemax = int(1e6)
@@ -64,8 +66,11 @@ class MachineConfigWidget(BaseDosboxConfigWidget):
         self.grid.addWidget(self.cpu_groupbox, 0, 0)
         self.core_box = ConfigComboBoxWidget(self.cpu_groupbox,
                                              'Core', self._default_cores)
+        self.tooltips.add(self.core_box, 'Select type of cpu core')
         self.cycles_box = ConfigSpinWidget(self.cpu_groupbox,
                                            'Cycles', max=cyclemax, suffix=' cycles')
+        tt = 'The number of cycles to attempt to perform in a second'
+        self.tooltips.add(self.cycles_box, tt)
         self.cycleup_box = ConfigSpinWidget(self.cpu_groupbox,
                                             'Cycle up increment', max=cyclemax,
                                             suffix=' cycles')
