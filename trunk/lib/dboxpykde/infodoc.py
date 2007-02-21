@@ -1,4 +1,5 @@
 import os
+import time
 
 from dboxpykde.contrib.forgetHTML import Inline
 from dboxpykde.contrib.forgetHTML import SimpleDocument
@@ -113,6 +114,12 @@ class MainGameInfoDocument(BaseDocument):
     def make_title_screenshot_table(self, gamedata):
         name = gamedata['name']
         screenshot = self.app.game_datahandler.get_title_screenshot_filename(name)
+        status = os.path.exists(screenshot)
+        # a quick hack to get khtml to use the current image
+        # thanks to Russell Valentine for this
+        if self.app.myconfig.getboolean('mainwindow', 'use_khtml_part'):
+            screenshot = '%s?test=%s' % (screenshot, time.time())
+            print screenshot
         tableatts = dict(class_='titlescreenshottable', width='100%')
         ss_table = Table(**tableatts)
         lbl = TableHeader('Title Screenshot', colspan=0, align='center')
@@ -122,7 +129,6 @@ class MainGameInfoDocument(BaseDocument):
         ss_cell = TableCell(align='center')
         ss_table.append(ss_row)
         ss_row.append(ss_cell)
-        status = os.path.exists(screenshot)
         if not status:
             ss_cell.set('Screenshot unavailable')
         else:

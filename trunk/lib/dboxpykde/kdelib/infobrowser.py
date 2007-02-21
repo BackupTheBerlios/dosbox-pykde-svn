@@ -88,6 +88,13 @@ class InfoBrowserCommon(object):
         self.doc = MainGameInfoDocument(self.app)
         # setup dialog pointers
         self.select_title_screenshot_dlg = None
+        self.app.dcop.addMethod('void editGameData (QString)', self.edit_game_data_dialog)
+        
+    def edit_game_data_dialog(self, name):
+        dlg = EditGameDataDialog(self.dialog_parent, name)
+        # here we connect the GameDataUpdated signal to the set_game_info method
+        dlg.connect(dlg, PYSIGNAL('GameDataUpdated'), self.set_game_info)
+        dlg.show()
         
     # this is selected when a url is clicked
     def _perform_url_action(self, url):
@@ -109,10 +116,7 @@ class InfoBrowserCommon(object):
             dlg.audit_game(name, from_install=True)
             #filehandler.audit_game_files(name, from_install=True)
         elif action == 'edit':
-            dlg = EditGameDataDialog(self.dialog_parent, name)
-            # here we connect the GameDataUpdated signal to the set_game_info method
-            dlg.connect(dlg, PYSIGNAL('GameDataUpdated'), self.set_game_info)
-            dlg.show()
+            self.edit_game_data_dialog(name)
         elif action == 'set_title_screenshot':
             self.select_title_screenshot(name)
         elif action == 'open_weblink':
