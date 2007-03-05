@@ -1,1 +1,0 @@
-from cfgmain import DosboxConfigTabWidget

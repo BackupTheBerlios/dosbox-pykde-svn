@@ -1,3 +1,0 @@
-?package(dosbox-pykde):command="/usr/bin/dosbox-pykde" \
-	needs="X11" section="Apps/Emulators" \
-	title="PyKDE dosbox frontend"

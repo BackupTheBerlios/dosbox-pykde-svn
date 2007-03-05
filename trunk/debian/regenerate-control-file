@@ -1,1 +1,0 @@
-DEB_AUTO_UPDATE_DEBIAN_CONTROL=yes fakeroot debian/rules clean
