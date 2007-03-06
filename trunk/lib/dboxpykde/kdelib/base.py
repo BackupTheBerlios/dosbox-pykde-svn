@@ -20,9 +20,10 @@ def excepthook(type, value, tracebackobj):
     traceback.print_tb(tracebackobj, None, tbinfofile)
     tbinfofile.seek(0)
     tbinfo = tbinfofile.read()
-    sections = [str(type), str(value), separator, tbinfo, separator]
+    errmsg = '%s: %s' % (str(type), str(value))
+    sections = [separator, errmsg, separator]
     msg = '\n'.join(sections)
-    KMessageBox.error(None, msg)
+    KMessageBox.detailedError(None, msg, tbinfo)
 
 def get_application_pointer():
     return KApplication.kApplication()
