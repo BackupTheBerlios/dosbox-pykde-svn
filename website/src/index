@@ -200,7 +200,10 @@ KDE users on i386/amd64 architectures.
 Download
 --------------
 
-Currently the best way to obtain dosbox-pykde is through subversion::
+There is an initial release available.
+      dosbox-pykde-0.1.0_
+
+You can also obtain dosbox-pykde through subversion::
 
 	  svn checkout svn://svn.berlios.de/dosbox-pykde/trunk dosbox-pykde
 
@@ -329,7 +332,7 @@ the application from version to version.
 .. _KDE: http://www.kde.org/
 .. _DboxFE: http://chmaster.freeforge.net/dboxfe-project.htm
 .. _PyXML: http://pyxml.sourceforge.net/
-
+.. _dosbox-pykde-0.1.0: http://developer.berlios.de/project/showfiles.php?group_id=7928&release_id=12497
 
 
 
