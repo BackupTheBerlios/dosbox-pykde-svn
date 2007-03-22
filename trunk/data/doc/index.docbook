@@ -112,7 +112,7 @@ Above the games are zork 1,2 and 3.  In &myapplication;, all of the games are re
 The Zork games make a good example to work with, as they are freely available online.  You may find them <ulink url="http://www.csd.uwo.ca/Infocom/">here</ulink>.  Please download the DOS versions.
 </para>
 <para>
-In order to start using &myapplication;, you need to have at least one archive unzipped in a directory underneath the main dosbox path.  
+In order to start using &myapplication;, you need to have at least one archive unzipped in a directory underneath the main dosbox path.  The name of that directory will be used for the unique name of that game.  Select "New game" from either the menu or the toolbar.  A directory selection dialog, set to your main dosbox path, will appear.  Select the subdirectory that the game is installed in.  Once the directory is selected, another dialog will appear for you to enter the game data.  Some of the entries are automatically pre-filled.  The dosbox path is already filled out for you, and shouldn't be changed.  The rest of the pre-filled entries are based on the name of the directory you selected in the previous dialog.  You should keep the name entry the same, but you will probably have to set the launch command, and you will most probably want to fill in the full name entry.  Click ok when done with that, and the game will be imported into &myapplication;.
 </para>
 </chapter>
 </book>
