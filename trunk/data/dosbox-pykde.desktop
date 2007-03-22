@@ -1,0 +1,5 @@
+[Desktop Entry]
+Exec=/usr/bin/dosbox-pykde
+Icon=/usr/share/icons/hicolor/32x32/apps/dosbox-pykde.png
+Name=PyKDE Dosbox Frontend
+Type=Application

@@ -1,6 +1,7 @@
 import os, sys
 import shutil
 
+from dboxpykde.path import path
 from dboxpykde.base import ExistsError, FileError
 from dboxpykde.base import md5sum, makepaths
 

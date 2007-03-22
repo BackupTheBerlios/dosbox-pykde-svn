@@ -62,6 +62,7 @@ scripts = ['dosbox-pykde']
 
 # with the next lines we assume that this is being built with the --prefix /usr option
 docs_directory = 'share/doc/dosbox-pykde'
+applnk = 'share/applnk/Games/Emulator'
 docs_directory_html = os.path.join(docs_directory, 'html')
 _kde_html_parent = commands.getoutput('kde-config --path html').split(':')[1]
 kde_docs_directory_html = os.path.join(_kde_html_parent, 'en', 'dosbox-pykde')
@@ -76,7 +77,8 @@ package_dir = {'' : 'lib'}
 
 
 data_files = [
-    (docs_directory, ['README'])
+    (docs_directory, ['README']),
+    (applnk, ['data/dosbox-pykde.desktop'])
     ]
 
 setup(name='dosbox-pykde',
