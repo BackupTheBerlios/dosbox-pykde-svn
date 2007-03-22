@@ -1,0 +1,53 @@
+#!/usr/bin/python
+import os, sys
+
+from kdecore import KCmdLineArgs
+
+from dboxpykde.kdelib.application import MainApplication, AboutData
+from dboxpykde.kdelib.mainwindow import MainWindow
+
+from dboxpykde.gamesdata import GameDataHandler
+from dboxpykde.filemanagement.main import GameFilesHandler
+from dboxpykde.dosbox import Dosbox
+from dboxpykde.kdelib.base import excepthook
+
+
+if __name__ == '__main__':
+    aboutData = AboutData()
+    # I don't understand this part
+    KCmdLineArgs.init(sys.argv, aboutData)
+    sys.excepthook = excepthook
+    #raise StandardError, 'testing an error'
+
+    # setup application
+    app = MainApplication()
+    testit = 'cfg'
+    testit = 'manage profiles'
+    testit = 'settings'
+    
+    if testit == 'cfg':
+        from dboxpykde.kdelib.dosboxcfg.main import DosboxConfigTabWidget
+        from ConfigParser import ConfigParser
+        cfg = ConfigParser()
+        cfg.read('dosbox.conf.test')
+        win = DosboxConfigTabWidget(None)
+        win.showPage(win.sdltab)
+        win.set_config(cfg)
+        #win.showPage(win.machinetab)
+        #win.showPage(win.soundtab)
+        win.show()
+    elif testit == 'manage profiles':
+        win = MainWindow(None)
+        win.show()
+        win.manageDosboxProfilesAction.activate()
+    elif testit == 'settings':
+        win = MainWindow(None)
+        win.show()
+        win.configureDosboxPyKDEAction.activate()
+        
+    # set main window in application
+    app.setMainWidget(win)
+    # run the application
+    app.exec_loop()
+
+    

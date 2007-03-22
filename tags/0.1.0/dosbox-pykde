@@ -1,0 +1,48 @@
+#!/usr/bin/python
+import os, sys
+
+from kdecore import KCmdLineArgs
+
+from dboxpykde.kdelib.application import MainApplication, AboutData
+from dboxpykde.kdelib.mainwindow import MainWindow
+
+from dboxpykde.gamesdata import GameDataHandler
+from dboxpykde.filemanagement.main import GameFilesHandler
+from dboxpykde.dosbox import Dosbox
+from dboxpykde.kdelib.base import excepthook
+from dboxpykde.kdelib.wizard import DboxPykdeWizard
+
+if __name__ == '__main__':
+    aboutData = AboutData()
+    # I don't understand this part
+    KCmdLineArgs.init(sys.argv, aboutData)
+    sys.excepthook = excepthook
+    #raise StandardError, 'testing an error'
+
+    # setup application
+    app = MainApplication()
+    use_wizard = False
+    if hasattr(app, 'myconfig'):
+        # setup dcop and register the application
+        dcop = app.dcopClient()
+        appid = dcop.registerAs('dosbox-pykde')
+        win = MainWindow(None)
+        win.show()
+    elif use_wizard:
+        win = DboxPykdeWizard(None)
+        win.show()
+    else:
+        app.generate_default_config()
+        app.generate_main_objects()
+        # setup dcop and register the application
+        dcop = app.dcopClient()
+        appid = dcop.registerAs('dosbox-pykde')
+        win = MainWindow(None)
+        win.show()
+        
+    # set main window in application
+    app.setMainWidget(win)
+    # run the application
+    app.exec_loop()
+
+    

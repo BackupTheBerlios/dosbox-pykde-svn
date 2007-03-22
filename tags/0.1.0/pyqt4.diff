@@ -1,0 +1,345 @@
+Index: lib/qtwin/gamedata_widgets.py
+===================================================================
+--- lib/qtwin/gamedata_widgets.py	(revision 1234)
++++ lib/qtwin/gamedata_widgets.py	(working copy)
+@@ -1,19 +1,19 @@
+ import os
+-from qt import SIGNAL, SLOT
+-from qt import QGridLayout
+-from qt import QLabel
+-from qt import QFrame
++from PyQt4.QtCore import SIGNAL, SLOT
++from PyQt4.QtGui import QGridLayout
++from PyQt4.QtGui import QLabel
++from PyQt4.QtGui import QFrame
+ 
+-from kdecore import KApplication
++#from kdecore import KApplication
+ 
+ 
+-from kdeui import KMessageBox
+-from kdeui import KLineEdit
+-from kdeui import KTextEdit
+-from kdeui import KPushButton
+-from kdeui import KDialogBase
++#from kdeui import KMessageBox
++#from kdeui import KLineEdit
++#from kdeui import KTextEdit
++#from kdeui import KPushButton
++#from kdeui import KDialogBase
+ 
+-from kfile import KFileDialog
++#from kfile import KFileDialog
+ 
+ opendlg_errormsg = 'There is already a dialog box open.  Close it or restart the program'
+ 
+Index: lib/qtwin/mainwindow.py
+===================================================================
+--- lib/qtwin/mainwindow.py	(revision 1234)
++++ lib/qtwin/mainwindow.py	(working copy)
+@@ -1,15 +1,18 @@
+ import os
+-from qt import SIGNAL, SLOT
+-from qt import qApp
++from PyQt4.QtCore import SIGNAL, SLOT
++#from qt import qApp
++from PyQt4.QtGui import qApp
++from PyQt4.QtGui import QApplication
++from PyQt4.QtGui import QMainWindow
++from PyQt4.QtGui import QMenu
++from PyQt4.QtGui import QSplitter
++#from PyQt4.QtGui import QListView, QListViewItem
++# we'll wait on the new QTreeView
++# well we can't wait, there is no qt3support module
++from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem
++from PyQt4.QtGui import QMessageBox
+ 
+-from qt import QApplication
+-from qt import QMainWindow
+-from qt import QPopupMenu
+-from qt import QSplitter
+-from qt import QListView, QListViewItem
+-from qt import QMessageBox
+ 
+-
+ from base import split_url
+ from base import opendlg_errormsg
+ 
+@@ -56,18 +59,18 @@
+ # main window
+ class MainWindow(MainWindowCommon, QMainWindow):
+     def __init__(self, parent):
+-        QMainWindow.__init__(self, parent, 'PyQt Dosbox Frontend')
++        QMainWindow.__init__(self, parent)
+         # setup app pointer
+         self.app = qApp
+         self._init_common()
+ 
+-        self.splitView = QSplitter(self, 'splitView')
+-        self.listView = QListView(self.splitView, 'games_view')
++        self.splitView = QSplitter(self)
++        self.listView = QTreeWidget(self.splitView)
+         self.initlistView()
+         x, y = self.config.get_xy('mainwindow', 'mainwindow_size')
+         self.splitView.setSizes([int(.1*x), int(.9*x)])
+         self.connect(self.listView,
+-                     SIGNAL('selectionChanged()'), self.selectionChanged)
++                     SIGNAL('itemSelectionChanged()'), self.selectionChanged)
+         self.textView = InfoBrowser(self.splitView)
+         self.setCentralWidget(self.splitView)
+         
+@@ -93,36 +96,49 @@
+                                                                  self)
+ 
+     def initMenus(self):
+-        mainmenu = QPopupMenu(self)
+-        self.newGameAction.addTo(mainmenu)
+-        self.launchDosboxAction.addTo(mainmenu)
+-        mainmenu.insertSeparator()
+-        self.prepareAllGamesAction.addTo(mainmenu)
+-        self.cleanAllGamesAction.addTo(mainmenu)
+-        self.archiveAllGamesAction.addTo(mainmenu)
+-        self.quitAction.addTo(mainmenu)
+-        optionmenu = QPopupMenu(self)
+-        self.flatViewAction.addTo(optionmenu)
+-        self.treeViewAction.addTo(optionmenu)
+-        self.nameViewAction.addTo(optionmenu)
+-        self.titleViewAction.addTo(optionmenu)
+-        optionmenu.insertSeparator()
+-        self.filterAllGamesAction.addTo(optionmenu)
+-        self.filterAvailableGamesAction.addTo(optionmenu)
+-        self.filterUnavailableGamesAction.addTo(optionmenu)
++        #mainmenu = QMenu(self)
+         menubar = self.menuBar()
+-        menubar.insertItem('&Main', mainmenu)
+-        menubar.insertItem('&Options', optionmenu)
++        mainmenu = menubar.addMenu('&Main')
++        self.newGameAction.setMenu(mainmenu)
++        self.launchDosboxAction.setMenu(mainmenu)
++        mainmenu.addSeparator()
++        self.prepareAllGamesAction.setMenu(mainmenu)
++        self.cleanAllGamesAction.setMenu(mainmenu)
++        self.archiveAllGamesAction.setMenu(mainmenu)
++        self.quitAction.setMenu(mainmenu)
++        optionmenu = menubar.addMenu('&Options')
++        self.flatViewAction.setMenu(optionmenu)
++        self.treeViewAction.setMenu(optionmenu)
++        self.nameViewAction.setMenu(optionmenu)
++        self.titleViewAction.setMenu(optionmenu)
++        optionmenu.addSeparator()
++        self.filterAllGamesAction.setMenu(optionmenu)
++        self.filterAvailableGamesAction.setMenu(optionmenu)
++        self.filterUnavailableGamesAction.setMenu(optionmenu)
++        #menubar.insertItem('&Main', mainmenu)
++        #menubar.insertItem('&Options', optionmenu)
+ 
++    def initlistView(self):
++        # the -1 is to set the column's WidthMode to Maximum instead of Manual
++        #self.listView.addColumn('games', -1)
++        self.listView.setColumnCount(1)
++        self.listView.setHeaderLabels(['games'])
++        self.refreshListView()
++
+     # do nothing here, for now
+     def initToolbar(self):
+         pass
+     
+     def refreshListView(self):
+-        self.refreshListView_common(QListViewItem)
++        self.refreshListView_common(QTreeWidgetItem)
+ 
+     def _appendListItem(self, parent, name):
+-        self._appendListItem_common(parent, name, QListViewItem)
++        show, item_label = self._decide_to_show_listItem(name)
++        if show:
++            item = QTreeWidgetItem(parent)
++            item.setText(0, item_label)
++            item.game = name
++        return item
+         
+     def selectGame(self, name, called_externally=False):
+         self.textView.set_game_info(name)
+Index: lib/qtwin/infobrowser.py
+===================================================================
+--- lib/qtwin/infobrowser.py	(revision 1234)
++++ lib/qtwin/infobrowser.py	(working copy)
+@@ -1,9 +1,9 @@
+ import os
+-from qt import SIGNAL, SLOT
+-from qt import qApp
+-from qt import QTextBrowser
+-from qt import QMessageBox
+-from qt import QFileDialog
++from PyQt4.QtCore import SIGNAL, SLOT
++from PyQt4.QtGui import qApp
++from PyQt4.QtGui import QTextBrowser
++from PyQt4.QtGui import QMessageBox
++from PyQt4.QtGui import QFileDialog
+ 
+ #from kdeui import KMessageBox
+ 
+@@ -17,7 +17,7 @@
+ 
+ from infodoc import BaseDocument
+ 
+-from gamedata_widgets import EditGameDataDialog
++#from gamedata_widgets import EditGameDataDialog
+         
+ # text browser for game info
+ # uses html
+@@ -25,7 +25,7 @@
+ # recommend not using this method
+ class InfoBrowser(QTextBrowser):
+     def __init__(self, parent, name='InfoBrowser'):
+-        QTextBrowser.__init__(self, parent, name)
++        QTextBrowser.__init__(self, parent)
+         self.app = qApp
+         # we need to figure out what to do with setNotifyClick
+         #self.setNotifyClick(True)
+@@ -42,10 +42,10 @@
+         # make a new document
+         self.doc = BaseDocument(self.app)
+         # display empty document
+-        self.setText(self.doc.output())
++        self.setHtml(self.doc.output())
+         # continue with what used to work
+         self.doc.set_info(name)
+-        self.setText(self.doc.output())
++        self.setHtml(self.doc.output())
+         
+     # this is selected when a url is clicked
+     def setSource(self, url):
+Index: lib/qtwin/actions.py
+===================================================================
+--- lib/qtwin/actions.py	(revision 1233)
++++ lib/qtwin/actions.py	(working copy)
+@@ -1,5 +1,5 @@
+-from qt import QAction
+-from qt import SIGNAL, SLOT
++from PyQt4.QtGui import QAction
++from PyQt4.QtCore import SIGNAL, SLOT
+ 
+ from common.actions import FilterAvailableGamesData
+ from common.actions import FilterUnavailableGamesData
+@@ -19,8 +19,8 @@
+ # this class will go into useless.kbase.actions later
+ class BaseAction(QAction):
+     def __init__(self, itemdata, name, slot, parent):
+-        QAction.__init__(self, parent, name)
+-        self.setMenuText(itemdata['text'])
++        QAction.__init__(self, parent)
++        self.setText(itemdata['text'])
+         self.setToolTip(itemdata['ttip'])
+         self.setWhatsThis(itemdata['whatsit'])
+         self.connect(self, SIGNAL('activated()'), slot)
+Index: lib/common/mainwindow.py
+===================================================================
+--- lib/common/mainwindow.py	(revision 1234)
++++ lib/common/mainwindow.py	(working copy)
+@@ -48,25 +48,24 @@
+             self.game_names.append(name)
+             self.game_names.sort()
+ 
+-    def _appendListItem_common(self, parent, name, itemclass):
++    def _decide_to_show_listItem(self, name):
+         if self.name_title_view == 'name':
+             item_label = name
+         else:
+             item_label = self.game_titles[name]
+-        item = None
++        show= False
+         if self._show_filter == 'all':
+-            item = itemclass(parent, item_label)
++            show= True
+         else:
+             fhandler = self.app.game_fileshandler
+             available = fhandler.get_game_status(name)
+             if self._show_filter == 'available':
+                 if available:
+-                    item = itemclass(parent, item_label)
++                    show= True
+             elif self._show_filter == 'unavailable':
+                 if not available:
+-                    item = itemclass(parent, item_label)
+-        if item is not None:
+-            item.game = name
++                    show= True
++        return show, item_label
+         
+     def refreshListView_common(self, itemclass):
+         self.listView.clear()
+@@ -105,7 +104,9 @@
+                 self._appendListItem(self.listView, game)
+             
+     def selectionChanged(self):
++        print "selectionChanged"
+         item = self.listView.currentItem()
++        print item
+         if hasattr(item, 'game'):
+             self.selectGame(item.game, called_externally=False)
+ 
+Index: lib/kdelib/mainwindow.py
+===================================================================
+--- lib/kdelib/mainwindow.py	(revision 1234)
++++ lib/kdelib/mainwindow.py	(working copy)
+@@ -152,7 +152,9 @@
+         self.refreshListView_common(KListViewItem)
+ 
+     def _appendListItem(self, parent, name):
+-        self._appendListItem_common(parent, name, KListViewItem)
++        show, item_label = self._decide_to_show_listItem(name)
++        if show:
++            item = KListViewItem(parent, item_label)
+         
+     # if this method is called externally, i.e. through dcop
+     # we need to select the KListViewItem that matches also
+Index: setup.py
+===================================================================
+--- setup.py	(revision 1230)
++++ setup.py	(working copy)
+@@ -34,7 +34,7 @@
+ author_email = 'umeboshi@gregscomputerservice.com'
+ url = 'file://.'
+ 
+-scripts = ['dosbox-pykde']
++scripts = ['dosbox-pykde', 'dosbox-pyqt']
+ 
+ modules_dir = 'lib'
+ # with the next lines we assume that this is being built with the --prefix /usr option
+Index: dosbox-pyqt
+===================================================================
+--- dosbox-pyqt	(revision 1234)
++++ dosbox-pyqt	(working copy)
+@@ -26,9 +26,9 @@
+     if not os.path.exists(path):
+         os.mkdir(path)
+ 
+-from qt import SIGNAL, SLOT
+-from qt import QApplication
+-        
++#from qt import SIGNAL, SLOT
++from PyQt4.QtGui import QApplication
++from PyQt4.QtCore import SIGNAL, SLOT
+ # main application class
+ # we define the class here for now
+ class MainApplication(QApplication):
+@@ -45,7 +45,7 @@
+ # imported, to get qApp to point back to the python instance of the
+ # application.
+ app = MainApplication(sys.argv)
+-sys.modules['qt'].__dict__['qApp'] = app
++sys.modules['PyQt4.QtGui'].__dict__['qApp'] = app
+ 
+ #from widgets import AboutData
+ #from widgets import MainApplication
+@@ -73,8 +73,8 @@
+     win = MainWindow(None)
+     win.show()
+     # set main window in application
+-    app.setMainWidget(win)
++    #app.setMainWidget(win)
+     # run the application
+-    app.exec_loop()
++    app.exec_()
+ 
+     
