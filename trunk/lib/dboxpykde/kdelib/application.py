@@ -96,7 +96,7 @@ class MainApplication(KApplication):
         configobj.write(cfile)
         cfile.seek(0)
         self.myconfig.readfp(cfile)
-        self.save_main_config(self)
+        self.save_main_config(self.mainconfigfilename)
         self.load_main_config()
 
     def save_main_config(self, filename=None):

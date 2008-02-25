@@ -2,7 +2,7 @@ Source: dosbox-pykde
 Section: kde
 Priority: optional
 Maintainer: Joseph Rawson <umeboshi@gregscomputerservice.com>
-Build-Depends: @cdbs@, python-dev (>= 2.3), python-support, kdelibs4
+Build-Depends: @cdbs@, python-dev (>= 2.3), python-support, kdelibs4 | kdelibs4c2a
 Standards-Version: 5
 
 Package: dosbox-pykde
