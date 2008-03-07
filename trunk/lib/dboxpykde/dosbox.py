@@ -110,7 +110,7 @@ class Dosbox(object):
         configfilename = self._configfilename(name)
         if not os.path.isfile(configfilename):
             raise ExistsError, "%s doesn't exist." % configfilename
-        return '-conf %s' % configfilename
+        return '-conf "%s"' % configfilename
 
     def _get_args(self, name, launch_game=True, use_config=True):
         handler = self.app.game_datahandler

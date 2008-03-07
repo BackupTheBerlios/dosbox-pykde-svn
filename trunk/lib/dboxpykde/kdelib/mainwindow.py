@@ -45,6 +45,9 @@ from actions import ConfigureDosboxPyKDE
 from gamedata_widgets import AddNewGameDialog
 from gamedata_widgets import EditGameDataDialog
 
+# test import
+from gamedata_widgets import ImportGameDialog
+
 from infobrowser import InfoBrowser
 from infobrowser import InfoPart
 
@@ -298,8 +301,10 @@ class MainWindow(MainWindowCommon, KMainWindow):
         dlg.show()
 
     def slotImportZipFile(self):
-        KMessageBox.information(self, 'Import a new game, not yet implemented.')
-
+        #KMessageBox.information(self, 'Import a new game, not yet implemented.')
+        dlg = ImportGameDialog(self)
+        dlg.show()
+        
     def slotConfigureDosboxPyKDE(self):
         #KMessageBox.information(self, 'ConfigureDosboxPyKDE')
         dlg = SettingsWidgetDialog(self)
