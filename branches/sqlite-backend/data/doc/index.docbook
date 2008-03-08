@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.2-Based Variant V1.1//EN" "dtd/kdex.dtd"[
+<!ENTITY myapplication "<application>dosbox-pykde</application>">
+<!ENTITY % English "INCLUDE">
+
+]>
+<book lang="&language;">
+
+<bookinfo>
+<title>Dosbox-PyKDE Users Guide</title>
+<authorgroup>
+<author>
+<personname>
+<firstname>Joseph</firstname>
+<surname>Rawson</surname>
+<email>umeboshi@gregscomputerservice.com</email>
+</personname>
+</author>
+</authorgroup>
+<copyright>
+<year>2007</year>
+<holder>Public Domain</holder>
+</copyright>
+<abstract>
+<para>
+&myapplication; is a frontend to the Dosbox emulator.</para>
+</abstract>
+<keywordset>
+<keyword>KDE</keyword>
+<keyword>dosbox</keyword>
+<keyword>PyKDE</keyword>
+<keyword>pykde</keyword>
+<keyword>dosbox-pykde</keyword>
+</keywordset>
+
+</bookinfo>
+<chapter id="introduction">
+<title>Introduction</title>
+<para>
+This is an introductory paragraph.  This paragraph needs to be replaced.
+</para>
+</chapter>
+<chapter id="features">
+<title>Features</title>
+<para>
+<itemizedlist>
+<listitem>File Management
+	<itemizedlist>
+	<listitem>All new games added to the frontend are archived in  a 
+	"fresh install" zip file.
+	</listitem>
+	<listitem>All new and changed files are archived with rdiff-backup into a separate
+	"extras archive".
+	</listitem>
+	</itemizedlist>
+</listitem>
+<listitem>HTML presentation of information
+	<itemizedlist>
+	<listitem>HTML description of game
+	</listitem>
+	<listitem>Screenshots - currently only displaying title screenshot
+	</listitem>
+	<listitem>Web/Documentation links
+	</listitem>
+	</itemizedlist>
+</listitem>
+<listitem>Dosbox configuration
+	<itemizedlist>
+	<listitem>Manage different dosbox configurations with profiles.
+	</listitem>
+	<listitem>Game specific configurations are available to override profiles.
+	</listitem>
+	</itemizedlist>
+</listitem>
+</itemizedlist>
+</para>
+</chapter>
+<chapter id="quickstart">
+<title>Quick Start</title>
+<para>
+Before using &myapplication;, some explanation of the expected layout of the files is required.  Long ago, before I ever decided to make a frontend to dosbox, I had a "dosbox" directory in my filesystem.  This directory was being used as the c: drive in dosbox.  In the autoexec.bat, a menu program was used to select the game to run.  This was a good reflection of what it was like to really be running a dos environment.  Many people used menus to launch their programs in the days before Win95.  All of the games were arranged in subdirectories according to the genre or type of game.  An example layout follows:  
+</para>
+<itemizedlist>
+<listitem>c:
+	<itemizedlist>
+	<listitem>adventure
+		<itemizedlist>
+		<listitem>graphic</listitem>
+		<listitem>quest</listitem>
+		<listitem>text
+			<itemizedlist>
+			<listitem>infocom
+				<itemizedlist>
+				<listitem>zork1</listitem>
+				<listitem>zork2</listitem>
+				<listitem>zork3</listitem>
+				</itemizedlist>
+			</listitem>
+			</itemizedlist>
+		</listitem>
+		</itemizedlist>
+	</listitem>
+	<listitem>rpg</listitem>
+	<listitem>strategy</listitem>
+	</itemizedlist>
+</listitem>
+</itemizedlist>
+<para>
+Above the games are zork 1,2 and 3.  In &myapplication;, all of the games are referenced by a unique name (no spaces), and have a relative path from the main dosbox directory attached to them called "dosbox path".  So in the above layout, the game Zork 1 would have a name zork1 and the dosbox path would be "adventure/text/infocom/zork1".  The name of the game is the last directory in the dosbox path.  This "feature" may be changed one day, if I feel that it is too confusing or otherwise difficult to work with.  For now, this is just how things work in &myapplication;.
+</para>
+<para>
+The Zork games make a good example to work with, as they are freely available online.  You may find them <ulink url="http://www.csd.uwo.ca/Infocom/">here</ulink>.  Please download the DOS versions.
+</para>
+<para>
+In order to start using &myapplication;, you need to have at least one archive unzipped in a directory underneath the main dosbox path.  The name of that directory will be used for the unique name of that game.  Select "New game" from either the menu or the toolbar.  A directory selection dialog, set to your main dosbox path, will appear.  Select the subdirectory that the game is installed in.  Once the directory is selected, another dialog will appear for you to enter the game data.  Some of the entries are automatically pre-filled.  The dosbox path is already filled out for you, and shouldn't be changed.  The rest of the pre-filled entries are based on the name of the directory you selected in the previous dialog.  You should keep the name entry the same, but you will probably have to set the launch command, and you will most probably want to fill in the full name entry.  Click ok when done with that, and the game will be imported into &myapplication;.
+</para>
+</chapter>
+</book>
