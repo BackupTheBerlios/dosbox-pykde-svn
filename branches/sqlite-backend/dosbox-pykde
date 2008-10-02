@@ -3,16 +3,17 @@ import os, sys
 
 from kdecore import KCmdLineArgs
 
+from useless.kdebase.error import excepthook
+
 from dboxpykde.kdelib.application import MainApplication, AboutData
 from dboxpykde.kdelib.mainwindow import MainWindow
 
-from dboxpykde.gamesdata import GameDataHandler
-from dboxpykde.filemanagement.main import GameFilesHandler
 from dboxpykde.dosbox import Dosbox
-from dboxpykde.kdelib.base import excepthook
+#from dboxpykde.kdelib.base import excepthook
 from dboxpykde.kdelib.wizard import DboxPykdeWizard
 
 if __name__ == '__main__':
+    os.environ['_USELESS_DB_BACKEND'] = 'sqlite'
     aboutData = AboutData()
     # I don't understand this part
     KCmdLineArgs.init(sys.argv, aboutData)
@@ -26,6 +27,8 @@ if __name__ == '__main__':
         # setup dcop and register the application
         dcop = app.dcopClient()
         appid = dcop.registerAs('dosbox-pykde')
+        if app.upgrade_to_db_required:
+            app.convert_all_xml_to_db()
         win = MainWindow(None)
         win.show()
     elif use_wizard:
@@ -37,6 +40,8 @@ if __name__ == '__main__':
         # setup dcop and register the application
         dcop = app.dcopClient()
         appid = dcop.registerAs('dosbox-pykde')
+        if app.upgrade_to_db_required:
+            app.convert_all_xml_to_db()
         win = MainWindow(None)
         win.show()
         

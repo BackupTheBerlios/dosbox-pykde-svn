@@ -70,6 +70,7 @@ class MainWindowCommon(object):
         
     def refreshListView_common(self, itemclass):
         self.listView.clear()
+        self.initialize_important_game_data()
         coltitle = '%s games' % self._show_filter.capitalize()
         self.listView.setColumnText(0, coltitle)
         # the tree view option may get too long

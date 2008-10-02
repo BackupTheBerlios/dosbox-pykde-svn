@@ -2,6 +2,9 @@ import os
 from qt import SIGNAL, SLOT
 from qt import PYSIGNAL
 from qt import QSplitter
+from qt import QTextDrag
+from qt import QUriDrag
+from qt import QStringList
 
 from kdeui import KMainWindow
 from kdeui import KListView, KListViewItem
@@ -24,6 +27,7 @@ from actions import ImportZipFile
 # launch dosbox actions
 from actions import LaunchDosbox
 from actions import LaunchDosboxPrompt
+from actions import LaunchMainDosboxPrompt
 # view actions
 from actions import NameView, TitleView
 from actions import FlatView, TreeView
@@ -46,8 +50,9 @@ from gamedata_widgets import AddNewGameDialog
 from gamedata_widgets import EditGameDataDialog
 
 # test import
-from gamedata_widgets import ImportGameDialog
-
+#from gamedata_widgets import ImportGameDialog
+from importgames import ImportGameUrlDialog
+from importgames import ImportsMainWindow
 from infobrowser import InfoBrowser
 from infobrowser import InfoPart
 
@@ -72,7 +77,8 @@ class MainWindow(MainWindowCommon, KMainWindow):
         # setup app pointer
         self.app = get_application_pointer()
         self._init_common()
-
+        self.setAcceptDrops(True)
+        
         # place a splitter in the window
         self.splitView = QSplitter(self, 'splitView')
         # place a listview in the splitter (on the left)
@@ -125,6 +131,9 @@ class MainWindow(MainWindowCommon, KMainWindow):
         self.launchDosboxPromptAction = \
                                       LaunchDosboxPrompt(self.slotLaunchDosboxPrompt,
                                                          collection)
+        self.launchMainDosboxPromptAction = \
+                                          LaunchMainDosboxPrompt(self.slotLaunchMainDosboxPrompt,
+                                                                 collection)
         self.flatViewAction = FlatView(self.slotFlatView, collection)
         self.treeViewAction = TreeView(self.slotTreeView, collection)
         self.nameViewAction = NameView(self.slotNameView, collection)
@@ -165,6 +174,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         # plug launch dosbox actions into the menu
         self.launchDosboxAction.plug(mainmenu)
         self.launchDosboxPromptAction.plug(mainmenu)
+        self.launchMainDosboxPromptAction.plug(mainmenu)
         # insert a little line separating menu items
         mainmenu.insertSeparator()
         # plug the rest of the main menu actions
@@ -207,6 +217,7 @@ class MainWindow(MainWindowCommon, KMainWindow):
         # add some actions to the toolbar
         self.newGameAction.plug(toolbar)
         self.importZipFileAction.plug(toolbar)
+        self.launchMainDosboxPromptAction.plug(toolbar)
         self.launchDosboxAction.plug(toolbar)
         self.launchDosboxPromptAction.plug(toolbar)
         self.manageDosboxProfilesAction.plug(toolbar)
@@ -288,6 +299,9 @@ class MainWindow(MainWindowCommon, KMainWindow):
     def slotLaunchDosboxPrompt(self, game=None):
         self._launchdosbox_common(game, launch_game=False)
 
+    def slotLaunchMainDosboxPrompt(self):
+        KMessageBox.information(self, 'Not implemented')
+        
     def slotManageDosboxProfiles(self):
         #from dosboxcfg.profile import ProfileDialogWindow
         #win = ProfileDialogWindow(self)
@@ -302,8 +316,11 @@ class MainWindow(MainWindowCommon, KMainWindow):
 
     def slotImportZipFile(self):
         #KMessageBox.information(self, 'Import a new game, not yet implemented.')
-        dlg = ImportGameDialog(self)
-        dlg.show()
+        #dlg = ImportGameUrlDialog(self)
+        
+        #dlg.show()
+        win = ImportsMainWindow(self)
+        win.show()
         
     def slotConfigureDosboxPyKDE(self):
         #KMessageBox.information(self, 'ConfigureDosboxPyKDE')
@@ -411,6 +428,21 @@ class MainWindow(MainWindowCommon, KMainWindow):
             dlg.perform_action(gamelist, self.game_titles)
             dlg.close()
         
+    def dropEvent(self, event):
+        #print 'in dropEvent', event
+        qlist = QStringList()
+        if QUriDrag.decodeToUnicodeUris(event, qlist):
+            if len(qlist) == 1:
+                url = qlist[0]
+                dlg = ImportGameUrlDialog(self)
+                dlg.url_entry.setText(url)
+                dlg.show()
+                
+                
+                
+    def dragEnterEvent(self, event):
+        #print 'in dragEnterEvent', event
+        event.accept(QUriDrag.canDecode(event))
         
 if __name__ == '__main__':
     print "testing module"

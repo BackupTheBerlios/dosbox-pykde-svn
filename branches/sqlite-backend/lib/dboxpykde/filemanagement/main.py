@@ -1,5 +1,6 @@
 import os, sys
 import shutil
+import subprocess
 
 from dboxpykde.path import path
 from dboxpykde.base import ExistsError, FileError
@@ -7,10 +8,18 @@ from dboxpykde.base import md5sum, makepaths
 
 from myzipfile import MyZipFile
 
+class PathTypeError(TypeError):
+    pass
+
+
 def _checkifdir(path):
     if not os.path.isdir(path):
         raise FileError, "%s must be a directory" % path
 
+def _testpathtype(a_path):
+    if type(a_path) is not path:
+        raise PathTypeError
+    
 def _itemize_md5sum_line(line):
     hashlen = 32
     return (line[hashlen:].strip(), line[:hashlen])
@@ -20,6 +29,7 @@ def make_md5sum_dict(installed_files):
     return dict(installed_files)
 
 def convert_filename_to_uppercase(filename, root):
+    
     converted = False
     if filename != filename.upper():
         old = os.path.join(root, filename)
@@ -175,8 +185,9 @@ class ArchiveHelper(object):
         if os.path.exists(archivename):
             here = os.getcwd()
             os.chdir(tpath)
-            cmd = '%s %s' % (extract_cmd, archivename)
-            result = os.system(cmd)
+            args = extract_cmd.split()
+            args.append(archivename)
+            result = subprocess.call(args)
             if result:
                 raise OSError, "there was a problem with extract_extras_archive %s" % name
             os.chdir(here)
@@ -201,18 +212,19 @@ class ArchiveHelper(object):
         staging_path = '%s-staging' % repos_path
         makepaths(staging_path)
         restore_cmd = 'rdiff-backup --force -r %s %s %s' % (time, repos_path, staging_path)
-        result = os.system(restore_cmd)
+        args = ['rdiff-backup', '--force', '-r', str(time), repos_path, staging_path]
+        result = subprocess.call(args)
         if result:
-            raise OSError, "there was a problem with %s" % restore_cmd
+            raise OSError, "there was a problem with %s" % ' '.join(args)
         return staging_path
     
     def perform_rdiff_backup(self, path, backup_path):
         if not os.path.isdir(backup_path):
             raise ExistsError, "backup path %s doesn't exist" % backup_path
-        cmd = 'rdiff-backup -v0 "%s" %s' % (path, backup_path)
-        result = os.system(cmd)
+        args = ['rdiff-backup', '-v0', path, backup_path]
+        result = subprocess.call(args)
         if result:
-            raise OSError, "problem with perform_rdiff_backup %s" % cmd
+            raise OSError, "problem with perform_rdiff_backup %s" % ' '.join(args)
     
     
 
@@ -228,10 +240,10 @@ class ArchiveHelper(object):
                 os.remove(archivename)
         here = os.getcwd()
         os.chdir(path)
-        cmd = 'tar cj . -f %s' % archivename
-        result = os.system(cmd)
+        args = ['tar', 'cj', '.', '-f', archivename]
+        result = subprocess.call(args)
         if result:
-            raise OSError, "problem with archive_rdiff_backup_repos %s" % cmd
+            raise OSError, "problem with archive_rdiff_backup_repos %s" % ' '.join(args)
         os.chdir(here)
 
     def copy_staging_tree_with_rsync(self, staging_path, install_path):
@@ -239,20 +251,22 @@ class ArchiveHelper(object):
             staging_path = '%s/' % staging_path
         if not install_path.endswith('/'):
             install_path = '%s/' % install_path
-        cmd = 'rsync -a %s "%s"' % (staging_path, install_path)
-        result = os.system(cmd)
+        args = ['rsync', '-a', staging_path, install_path]
+        result = subprocess.call(args)
         if result:
-            raise OSError, 'problem with %s' % cmd
+            raise OSError, 'problem with %s' % ' '.join(args)
 
     def remove_tree(self, path, system=False):
         if system:
-            cmd = 'rm -rf %s' % path
-            result = os.system(cmd)
+            args = ['rm', '-rf', path]
+            result = subprocess.call(args)
             if result:
-                raise OSError, 'problem with %s' % cmd
+                raise OSError, 'problem with %s' % ' '.join(args)
         else:
             shutil.rmtree(path)
     
+######################
+######################
 
 class GameFilesHandler(object):
     def __init__(self, app):

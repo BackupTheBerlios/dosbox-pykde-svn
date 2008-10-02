@@ -3,6 +3,7 @@ from ConfigParser import ConfigParser
 from StringIO import StringIO
 
 from base import ExistsError
+from path import path
 
 default_config = """
 # configuration file for dosbox-pykde
@@ -27,6 +28,10 @@ __archive_parent_path:      %(__main_path)s/archives
 installed_archives_path:	%(__archive_parent_path)s/dosbox-installed
 # path to the extras archives (backups of savegames and configs)
 extras_archives_path:	%(__archive_parent_path)s/dosbox-extras
+# path to archives downloaded from web sites
+downloaded_archives_path:   %(__archive_parent_path)s/downloaded
+# path to docs downloaded from web sites
+downloaded_docs_path:   %(__archive_parent_path)s/docs
 
 # This option determines whether the extra files
 # are archived in tarballs, or just left as a
@@ -185,7 +190,10 @@ class MyConfig(ConfigParser):
     
     def reload_config(self):
         self.read([self.configfilename])
-        
+
+    def getpath(self, section, option):
+        return path(self.get(section, option))
+    
 def generate_default_config(path):
     if not os.path.exists(path):
         cfile = file(path, 'w')

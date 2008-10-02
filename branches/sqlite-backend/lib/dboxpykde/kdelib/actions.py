@@ -16,6 +16,7 @@ from dboxpykde.common.actions import PrepareAllGamesData
 from dboxpykde.common.actions import CleanAllGamesData
 from dboxpykde.common.actions import ArchiveAllGamesData
 from dboxpykde.common.actions import LaunchDosboxPromptData
+from dboxpykde.common.actions import LaunchMainDosboxPromptData
 
 class BaseItem(KGuiItem):
     def __init__(self, itemdata):
@@ -122,6 +123,11 @@ class LaunchDosboxPrompt(BaseAction):
         BaseAction.__init__(self, LaunchDosboxPromptData, 'LaunchDosboxPrompt',
                             slot, parent)
 
+class LaunchMainDosboxPrompt(BaseAction):
+    def __init__(self, slot, parent):
+        BaseAction.__init__(self, LaunchMainDosboxPromptData, 'LaunchMainDosboxPrompt',
+                            slot, parent)
+        
 ############
 # these actions need to go to common area eventually
 ############

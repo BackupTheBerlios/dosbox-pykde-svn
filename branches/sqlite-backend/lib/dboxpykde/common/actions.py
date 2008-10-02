@@ -88,5 +88,12 @@ LaunchDosboxPromptData = dict(text=text,
                           ttip=_ttip,
                           whatsit=_ttip)
 
+text = 'Launch Main Dosbox Prompt'
+_ttip = 'Launch Main Dosbox Prompt (with main dosbox area as c:)'
+LaunchMainDosboxPromptData = dict(text=text,
+                                  icon='systemtray',
+                                  ttip=_ttip,
+                                  whatsit=_ttip)
+
 del _ttip
 del text

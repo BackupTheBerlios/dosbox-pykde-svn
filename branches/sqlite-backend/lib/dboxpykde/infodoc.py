@@ -6,8 +6,9 @@ from dboxpykde.contrib.forgetHTML import SimpleDocument
 from dboxpykde.contrib.forgetHTML import Anchor, Table
 from dboxpykde.contrib.forgetHTML import TableRow, TableCell
 from dboxpykde.contrib.forgetHTML import TableHeader, Header
-from dboxpykde.contrib.forgetHTML import Image
+from dboxpykde.contrib.forgetHTML import Image, Pre
 from dboxpykde.contrib.forgetHTML import Paragraph, Break
+from dboxpykde.contrib.forgetHTML import Span, Ruler, Text
 from base import make_url
 
 class Bold(Inline):
@@ -107,7 +108,22 @@ class MainGameInfoDocument(BaseDocument):
         # this is the only field that is likely to be blank
         if description is None:
             description = ''
-        desc = TableCell(description, colspan=0)
+        if description.startswith('<html>'):
+            desctext = Text(description)
+            desctext.set_rawtext(True)
+        else:
+            description = description.replace('\\n', '\n')
+            description = description.replace('\n', '<br>')
+            style = 'font-size: xx-small'
+            desctext = Text(description)
+            desctext.set_rawtext(True)
+            desctext = Paragraph(desctext, style=style)
+            
+            
+        #desctext = desctext.replace('\n', '<br>')
+        #desctext = Text(description)
+        #desctext.set_rawtext(True)
+        desc = TableCell(desctext, colspan=0)
         desc_row = TableRow(desc)
         self.maintable.append(desc_row)
         
@@ -169,17 +185,40 @@ class MainGameInfoDocument(BaseDocument):
         launchcmd_row.append(launchcmd)
         dosbox_data_table.append(launchcmd_row)
         return dosbox_data_table
+
+    def _make_filemanage_anchor_row(self, name, label, action):
+        row = TableRow()
+        anchor = Anchor(label, href=make_url(action, name), style="font-size: xx-small")
+        cell = TableCell(anchor, bgcolor='DarkSeaGreen4')
+        row.set(cell)
+        return row
     
-    def make_action_table(self, name):
-        atable = Table(class_='ActionTable')
-        available_row = TableRow()
-        status = self.filehandler.get_game_status(name)
-        align = dict(valign='center', align='center')
-        if status:
-            available_cell = TableCell(Bold('available'), bgcolor='DarkSeaGreen4', **align)
+    def _make_filemanage_anchors(self, name, status): 
+        filemanage_anchors = Table()
+        if not status:
+            row = self._make_filemanage_anchor_row(name, 'Prepare game', 'prepare')
+            filemanage_anchors.set(row)
+            row = self._make_filemanage_anchor_row(name,
+                                                   'Fresh install',
+                                                   'prepare-fresh')
+            filemanage_anchors.append(row)
         else:
-            available_cell = TableCell(Bold('unavailable'), bgcolor='Red', **align)
+            row = self._make_filemanage_anchor_row(name, 'Launch game', 'launch')
+            filemanage_anchors.set(row)
+            row = self._make_filemanage_anchor_row(name, 'Clean up game area',
+                                                   'cleanup')
+            filemanage_anchors.append(row)
+            row = self._make_filemanage_anchor_row(name,
+                                                   'Backup extra files', 'backup')
+            filemanage_anchors.append(row)
+            row = self._make_filemanage_anchor_row(name, 'Audit game', 'audit-install')
+            filemanage_anchors.append(row)
+        return filemanage_anchors
+    
+       
+    def _make_filemanage_anchors_orig(self, name, status): 
         filemanage_anchors = Paragraph()
+        #filemanage_anchors = Span(style="font-size: x-small")
         if not status:
             filemanage_anchor = Anchor('prepare game', href=make_url('prepare', name))
             filemanage_anchors.append(filemanage_anchor)
@@ -189,6 +228,9 @@ class MainGameInfoDocument(BaseDocument):
             filemanage_anchors.append(filemanage_anchor)
             
         else:
+            filemanage_anchor = Anchor('Launch game', href=make_url('launch', name))
+            filemanage_anchors.append(filemanage_anchor)
+            filemanage_anchor.append(Break())
             filemanage_anchor = Anchor('clean up game area', href=make_url('cleanup', name))
             filemanage_anchors.append(filemanage_anchor)
             filemanage_anchors.append(Break())
@@ -200,6 +242,21 @@ class MainGameInfoDocument(BaseDocument):
             filemanage_anchor = Anchor('Audit game from fresh install',
                                        href=make_url('audit-install', name))
             filemanage_anchors.append(filemanage_anchor)
+        #fmspan = Span(filemanage_anchors)
+        return filemanage_anchors
+    
+       
+    
+    def make_action_table(self, name):
+        atable = Table(class_='ActionTable')
+        available_row = TableRow()
+        status = self.filehandler.get_game_status(name)
+        align = dict(valign='center', align='center')
+        if status:
+            available_cell = TableCell(Bold('available'), bgcolor='DarkSeaGreen4', **align)
+        else:
+            available_cell = TableCell(Bold('unavailable'), bgcolor='Red', **align)
+        filemanage_anchors = self._make_filemanage_anchors(name, status)
         filemanage_cell = TableCell(filemanage_anchors)
 
         available_row.append(available_cell)

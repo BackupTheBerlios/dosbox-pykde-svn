@@ -14,10 +14,12 @@ from dcopexport import DCOPExObj
 from dboxpykde import VERSION
 from dboxpykde import get_version
 from dboxpykde.base import makepaths
+from dboxpykde.path import path
 from dboxpykde.config import generate_default_config
 from dboxpykde.config import generate_default_dosbox_config
 from dboxpykde.config import MyConfig
-from dboxpykde.gamesdata import GameDataHandler
+from dboxpykde.gamesdata import GameDataHandlerCompat
+from dboxpykde.dblite.main import Connection, GameDataBaseCompat
 from dboxpykde.filemanagement.main import GameFilesHandler
 from dboxpykde.dosbox import Dosbox
 
@@ -68,7 +70,11 @@ class MainApplication(KApplication):
             self.generate_default_config()
             self.generate_main_objects()
             
-            
+
+    def setMainWidget(self, win):
+        self.mainwindow = win
+        KApplication.setMainWidget(self, win)
+        
     def generate_default_config(self):
         default_dbox_cfilename = os.path.join(self.datadir, 'dosbox.conf.default')
         # generate default config files if not already present
@@ -79,10 +85,31 @@ class MainApplication(KApplication):
 
     def generate_main_objects(self):
         # setup objects
-        self.game_datahandler = self.make_new_datahandler()
+        self.upgrade_to_db_required = False
+        self._dbfile = self.datadir / 'main.db'
+        if not self._dbfile.exists():
+            print "no database file exists."
+            # test for xml files
+            gdh = GameDataHandlerCompat(self)
+            games = gdh.get_game_names()
+            if games:
+                self.upgrade_to_db_required = True
+        self.conn = Connection(self._dbfile)
+        #self.game_datahandler = self.make_new_datahandler()
+        self.game_datahandler = GameDataBaseCompat(self.conn)
+        self.game_datahandler.set_screenshots_path(self.data_directories['screenshots'])
         self.game_fileshandler = self.make_new_fileshandler()
         self.dosbox = self.make_new_dosbox_object()
-        
+
+    def convert_all_xml_to_db(self):
+        gdh = GameDataHandlerCompat(self)
+        games = gdh.get_game_names()
+        for game in games:
+            print 'converting', game
+            gamedata = gdh.get_game_data(game)
+            installed = gdh.get_installed_files(game)
+            self.game_datahandler.add_new_game(gamedata, installed)
+            
     # we call self._generate_data_directories() in this method
     # because changes to the config may affect these options
     # and the corresponding application attributes
@@ -126,22 +153,28 @@ class MainApplication(KApplication):
     # config file to the regular config location
     def _setup_standard_directories(self):
         self._std_dirs = KStandardDirs()
-        self.tmpdir_parent = str(self._std_dirs.findResourceDir('tmp', '/'))
-        self.datadir_parent = str(self._std_dirs.findResourceDir('data', '/'))
-        self.tmpdir = os.path.join(self.tmpdir_parent, 'dosbox-pykde')
-        self.datadir = os.path.join(self.datadir_parent, 'dosbox-pykde')
+        self.tmpdir_parent = path(str(self._std_dirs.findResourceDir('tmp', '/')))
+        self.datadir_parent = path(str(self._std_dirs.findResourceDir('data', '/')))
+        self.tmpdir = self.tmpdir_parent / 'dosbox-pykde'
+        self.datadir = self.datadir_parent / 'dosbox-pykde'
         # we need this in dosbox object (for now)
         self.main_config_dir = self.datadir
-        if not os.path.exists(self.datadir):
-            os.mkdir(self.datadir)
+        if not self.datadir.exists():
+            self.datadir.mkdir()
         
     def _generate_data_directories(self):
-        directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture', 'profiles'])
+        directories = {}.fromkeys(['games', 'configs', 'screenshots', 'capture', 'profiles',
+                                   'cache'])
         for dir_key in directories:
-            path = os.path.join(self.datadir, dir_key)
-            directories[dir_key] = path
-            if not os.path.exists(path):
-                os.mkdir(path)
+            newdir = self.datadir / dir_key
+            directories[dir_key]  = newdir
+            if not newdir.exists():
+                try:
+                    newdir.mkdir()
+                except OSError, inst:
+                    #print inst, dir(inst), inst.errno
+                    if inst.errno != 17:
+                        raise OSError(inst)
         self.data_directories = directories
 
     # this method sets attributes for the main directories
@@ -152,12 +185,12 @@ class MainApplication(KApplication):
     # directories.
     def _generate_archive_directories(self):
         cfg = self.myconfig
-        installed_archives_path = cfg.get('filemanagement', 'installed_archives_path')
-        extras_archives_path = cfg.get('filemanagement', 'extras_archives_path')
+        installed_archives_path = cfg.getpath('filemanagement', 'installed_archives_path')
+        extras_archives_path = cfg.getpath('filemanagement', 'extras_archives_path')
         makepaths(installed_archives_path, extras_archives_path)
         self.installed_archives_path = installed_archives_path
         self.extras_archives_path = extras_archives_path
-        self.main_dosbox_path = cfg.get('dosbox', 'main_dosbox_path')
+        self.main_dosbox_path = cfg.getpath('dosbox', 'main_dosbox_path')
 
     # This method is currently useless, but may be useful later
     # if some house cleaning needs doing before quitting

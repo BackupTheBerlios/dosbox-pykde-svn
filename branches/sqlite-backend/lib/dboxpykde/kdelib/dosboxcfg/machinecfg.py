@@ -39,7 +39,7 @@ class MachineConfigWidget(BaseDosboxConfigWidget):
         self._default_scalers = ['none', 'normal2x', 'normal3x', 'advmame2x', 'advmame3x',
                                  'advinterp2x', 'advinterp3x', 'tv2x', 'tv3x',
                                  'rgb2x', 'rgb3x', 'scan2x', 'scan3x']
-        self._default_cores = ['simple', 'normal', 'full', 'dynamic']
+        self._default_cores = ['simple', 'normal', 'full', 'dynamic', 'auto']
         for section in ['render', 'cpu', 'dosbox', 'dos', 'bios', 'serial', 'ipx']:
             self.localconfig.add_section(section)
         self.grid = QGridLayout(self, numrows, numcols,

@@ -251,29 +251,6 @@ class EditGameDataDialog(BaseGameDataDialog):
     
 
 
-# testing
-
-class ImportGameDialog(BaseDialogWindow):
-    def __init__(self, parent, name='ImportGameDialog'):
-        BaseDialogWindow.__init__(self, parent, name=name)
-        self.frame = QFrame(self)
-        margin = 5
-        space = 7
-        self.grid = QGridLayout(self.frame, 2, 1, margin, space)
-        self.url_lbl = QLabel('URL', self.frame)
-        self.url_entry = KLineEdit('', self.frame)
-        self.grid.addWidget(self.url_lbl, 0, 0)
-        self.grid.addWidget(self.url_entry, 1, 0)
-        self.setMainWidget(self.frame)
-        self.connect(self, SIGNAL('okClicked()'), self.import_game)
-        
-
-    def import_game(self):
-        url = str(self.url_entry.text())
-        print url
-        KMessageBox.information(self, "import_game is still not implemented")
-        
-
 if __name__ == '__main__':
     print "testing gamedata_widgets module"
     

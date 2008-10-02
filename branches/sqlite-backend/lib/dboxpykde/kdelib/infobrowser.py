@@ -1,4 +1,6 @@
 import os
+import subprocess
+
 from qt import SIGNAL, SLOT
 from qt import PYSIGNAL
 from qt import QString
@@ -21,6 +23,7 @@ from base import get_application_pointer
 from dboxpykde.infodoc import MainGameInfoDocument
 
 from gamedata_widgets import EditGameDataDialog
+from progress_dialogs import BaseProgressDialog
 
 
 # this ugly critter is a start of an audit game
@@ -106,7 +109,7 @@ class InfoBrowserCommon(object):
         elif action == 'backup':
             filehandler.backup_game_files(name)
         elif action == 'prepare':
-            filehandler.prepare_game(name)
+            self.prepare_game(name)
         elif action == 'prepare-fresh':
             filehandler.prepare_game(name, extras=False)
         elif action == 'audit-install':
@@ -127,13 +130,19 @@ class InfoBrowserCommon(object):
             # for these url's, the name is the site
             weblink_url = gamedata['weblinks'][name]
             if '%s' in cmd:
-                os.system(cmd % weblink_url)
+                cmd = cmd % weblink_url
             else:
-                os.system("%s '%s'" % (cmd, weblink_url))
+                cmd = "%s '%s'" % (cmd, weblink_url)
+            subprocess.call(cmd, shell=True)
+            
             # now we reset the name variable to reset the page properly
             name = gamedata['name']
+        elif action == 'launch':
+            self.app.mainwindow.launchDosboxAction.activate()
+            #import pdb
+            #pdb.set_trace()
         else:
-            KMessageBox.error(self, '%s is unimplemented.' % action)
+            KMessageBox.error(self.dialog_parent, '%s is unimplemented.' % action)
         # refresh the page
         self.set_game_info(name)
                         
@@ -174,6 +183,28 @@ class InfoBrowserCommon(object):
         self.select_title_screenshot_dlg = None
 
 
+    def _report_extract_from_installed_archive(self, filename, count, total):
+        dlg = self.extract_from_installed_archive_progress
+        progress = dlg.progressBar()
+        if dlg.total is None:
+            dlg.total = total
+            progress.setTotalSteps(total)
+        dlg.setLabel('Extracting %s from archive.' % filename)
+        progress.setProgress(count)
+        self.app.processEvents()
+        
+    def prepare_game(self, name):
+        filehandler = self.app.game_fileshandler
+        filehandler._report_extract_from_installed_archive = self._report_extract_from_installed_archive
+        dlg = BaseProgressDialog(self.dialog_parent)
+        self.extract_from_installed_archive_progress = dlg
+        dlg.resize(400, 200)
+        dlg.total = None
+        dlg.show()
+        filehandler.prepare_game(name)
+        dlg.close()
+        
+        
 
 # would like to use this class, but don't
 # understand how to connect url clicks
